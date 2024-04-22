@@ -6,92 +6,82 @@
 namespace lang
 {
     namespace ast
-    {
-        template<typename T>
-        struct BaseVisitor;
+    {   
+        struct BinaryExpression;
+        struct GroupingExpression;
+        struct LiteralExpression;
+        struct UnaryExpression;
 
-        /* It is a base class */
-        template<typename T>
+        struct BaseVisitor
+        {
+            virtual std::string visit(BinaryExpression* expression) = 0;
+            virtual std::string visit(GroupingExpression* expression) = 0;
+            virtual std::string visit(LiteralExpression* expression) = 0;
+            virtual std::string visit(UnaryExpression* expression) = 0;
+        };
+
         struct Expression
         {
-            virtual T accept(BaseVisitor<T>& visitor) = 0;
+            virtual std::string accept(BaseVisitor* visitor) = 0;
         };
 
-        template<typename T>
-        struct BinaryExpression: public Expression<T>
+        struct BinaryExpression: public Expression
         {
-
-            /* Expression "left" has to outlive the BinaryExpression */
-            Expression<T>& left;
+            Expression* left;
             lang::Token op;
-            Expression<T>& right;
+            Expression* right;
 
-            BinaryExpression(Expression<T>& left, const lang::Token& op, Expression<T>& right)
-                : left(left), right(right), op(op)
+            BinaryExpression(Expression* left, const lang::Token& op, Expression* right)
+                : left(std::move(left)), right(std::move(right)), op(op)
             {}
 
-            T accept(BaseVisitor<T>& visitor) override
+            std::string accept(BaseVisitor* visitor) override
             {
-                return visitor.visit(*this);
+                return visitor->visit(this);
             }
         };
 
-        template<typename T>
-        struct GroupingExpression: public Expression<T>
+        struct GroupingExpression: public Expression
         {
+            Expression* expr;
 
-            Expression<T>& expr;
-
-            GroupingExpression(Expression<T>& expression)
-                : expr(expression)
+            GroupingExpression(Expression* expression)
+                : expr(std::move(expression))
             {}
 
-            T accept(BaseVisitor<T>& visitor) override
+            std::string accept(BaseVisitor* visitor) override
             {
-                return visitor.visit(*this);
+                return visitor->visit(this);
             }
         };
 
-        template<typename T>
-        struct LiteralExpression: public Expression<T>
+        struct LiteralExpression: public Expression
         {
-
             lang::util::object_t value;
 
             LiteralExpression(const lang::util::object_t& value)
                 : value(value)
             {}
 
-            T accept(BaseVisitor<T>& visitor) override
+            std::string accept(BaseVisitor* visitor) override
             {
-                return visitor.visit(*this);
+                return visitor->visit(this);
             }
         };
 
-        template<typename T>
-        struct UnaryExpression: public Expression<T>
+        struct UnaryExpression: public Expression
         {
-
             lang::Token op;
-            Expression<T>& right;
+            Expression* value;
 
-            UnaryExpression(const lang::Token& op, Expression<T>& right)
-                : op(op), right(right)
+            UnaryExpression(const lang::Token& op, Expression* value)
+                : op(op), value(std::move(value))
             {}
 
-            T accept(BaseVisitor<T>& visitor) override
+            std::string accept(BaseVisitor* visitor) override
             {
-                return visitor.visit(*this);
+                return visitor->visit(this);
             }
-        };
-
-        template<typename T>
-        struct BaseVisitor
-        {
-            virtual T visit(BinaryExpression<T>& expression) = 0;
-            virtual T visit(GroupingExpression<T>& expression) = 0;
-            virtual T visit(LiteralExpression<T>& expression) = 0;
-            virtual T visit(UnaryExpression<T>& expression) = 0;
         };
     }
 }

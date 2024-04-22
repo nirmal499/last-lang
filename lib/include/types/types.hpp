@@ -25,7 +25,7 @@ namespace lang
             using null_t = lang::util::MYTYPE;
             null_t null = MYTYPE::NIL;
 
-            using object_t = std::variant<double, null_t,std::string>;
+            using object_t = std::variant<double, null_t, std::string>;
         }
 
         struct PrintVisitor
