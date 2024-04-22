@@ -31,42 +31,27 @@ namespace lang
             lang::Token op;
             Expression* right;
 
-            BinaryExpression(Expression* left, const lang::Token& op, Expression* right)
-                : left(std::move(left)), right(std::move(right)), op(op)
-            {}
+            BinaryExpression(Expression* left, const lang::Token& op, Expression* right);
 
-            std::string accept(BaseVisitor* visitor) override
-            {
-                return visitor->visit(this);
-            }
+            std::string accept(BaseVisitor* visitor) override;
         };
 
         struct GroupingExpression: public Expression
         {
             Expression* expr;
 
-            GroupingExpression(Expression* expression)
-                : expr(std::move(expression))
-            {}
+            GroupingExpression(Expression* expression);
 
-            std::string accept(BaseVisitor* visitor) override
-            {
-                return visitor->visit(this);
-            }
+            std::string accept(BaseVisitor* visitor) override;
         };
 
         struct LiteralExpression: public Expression
         {
             lang::util::object_t value;
 
-            LiteralExpression(const lang::util::object_t& value)
-                : value(value)
-            {}
+            LiteralExpression(const lang::util::object_t& value);
 
-            std::string accept(BaseVisitor* visitor) override
-            {
-                return visitor->visit(this);
-            }
+            std::string accept(BaseVisitor* visitor) override;
         };
 
         struct UnaryExpression: public Expression
@@ -74,14 +59,9 @@ namespace lang
             lang::Token op;
             Expression* value;
 
-            UnaryExpression(const lang::Token& op, Expression* value)
-                : op(op), value(std::move(value))
-            {}
+            UnaryExpression(const lang::Token& op, Expression* value);
 
-            std::string accept(BaseVisitor* visitor) override
-            {
-                return visitor->visit(this);
-            }
+            std::string accept(BaseVisitor* visitor) override;
         };
     }
 }
