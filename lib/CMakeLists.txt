@@ -3,6 +3,7 @@ add_library(${LIBRARY_NAME} STATIC
     src/lexer.cpp
     src/token.cpp
     src/types.cpp
+    src/ast.cpp
 )
 
 target_include_directories(${LIBRARY_NAME} 

@@ -6,7 +6,8 @@ set(CMAKE_BUILD_TYPE Debug)
 option(ENABLE_TESTING "Enable a Unit Testing Build" ON)
 
 set(LIBRARY_NAME "lang_lib")
-set(EXECUTABLE_NAME "executable")
+set(EXECUTABLE_NAME_1 "executable1")
+set(EXECUTABLE_NAME_2 "executable2")
 
 add_subdirectory(lib)
 
