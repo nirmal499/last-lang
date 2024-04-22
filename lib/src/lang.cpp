@@ -1,4 +1,5 @@
 #include <lang/lang.hpp>
+#include <ast/ast_printer.hpp>
 
 namespace lang
 {
@@ -42,10 +43,12 @@ namespace lang
             }
 
             this->run(std::move(line));
+            std::cout << "\n\n";
             line = std::string{};
         }
     }
 
+    /*
     void Lang::run(std::string&& source)
     {
         std::pair<std::vector<lang::Token>, std::vector<std::string>> tokens_and_errors = m_lexer->tokenize(std::move(source));
@@ -65,5 +68,39 @@ namespace lang
         {
             std::cout << token << "\n";
         }
+    }
+    */
+
+    void Lang::run(std::string&& source)
+    {
+        auto [tokens, tokenization_errors] = m_lexer->tokenize(std::move(source));
+        
+        if(tokenization_errors.size() > 0)
+        {
+            std::cout << "ERROR FOUND DURING TOKENIZATION:\n";
+            for(const auto& error: tokenization_errors)
+            {
+                std::cout << error << "\n";
+            }
+            
+            return;
+        }
+
+        auto [ast_expression_raw_ptr, parsing_errors] = m_parser->parse(std::move(tokens));
+
+        if(ast_expression_raw_ptr == nullptr || parsing_errors.size() > 0)
+        {
+            std::cout << "ERROR FOUND DURING PARSING:\n";
+            for(const auto& error: parsing_errors)
+            {
+                std::cout << error << "\n";
+            }
+            
+            return;
+        }
+
+        std::cout << "The AST is: \n\n";
+        ASTPrinter ast_printer;
+        std::cout << ast_printer.print(ast_expression_raw_ptr);
     }
 }

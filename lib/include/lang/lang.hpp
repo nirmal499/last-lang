@@ -2,6 +2,7 @@
 
 #include <types/types.hpp>
 #include <lexer/lexer.hpp>
+#include <parser/parser.hpp>
 
 namespace lang
 {
@@ -17,5 +18,6 @@ namespace lang
 
         private:
             std::unique_ptr<lang::Lexer> m_lexer{std::make_unique<lang::Lexer>()};
+            std::unique_ptr<lang::Parser> m_parser{std::make_unique<lang::Parser>()};
     };
 }

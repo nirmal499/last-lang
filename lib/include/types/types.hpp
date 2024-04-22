@@ -9,6 +9,8 @@
 #include <unordered_map>
 #include <sstream>
 #include <unordered_map>
+#include <exception>
+#include <iomanip>
 
 namespace lang
 {
@@ -25,17 +27,35 @@ namespace lang
             using null_t = lang::util::MYTYPE;
             null_t null = MYTYPE::NIL;
 
-            using object_t = std::variant<double, null_t, std::string>;
+            using object_t = std::variant<double, null_t, std::string, bool>;
         }
 
         struct PrintVisitor
         {
             void operator()(double value) const { std::cout << value; }
             void operator()(const std::string& value) const { std::cout << value; }
+            void operator()(bool value) const { std::cout << std::boolalpha << value; }
             void operator()(null_t value) const
             {
                 std::cout << "MYTYPE::NIL";
             }
         };
+
+        /* Custom Exception */
+        class parser_error: public std::exception
+        {
+            public:
+                /* Constructor with a message */
+                parser_error(const char* message): msg(message){}
+
+                /* Override what() method to provide error message */
+                virtual const char* what() const throw() {
+                    return msg.c_str();
+                }
+            
+            private:
+                std::string msg;
+        };
+
     }
 }
