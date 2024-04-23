@@ -99,8 +99,26 @@ namespace lang
             return;
         }
 
-        std::cout << "The AST is: \n\n";
-        ASTPrinter ast_printer;
-        std::cout << ast_printer.print(ast_expression_raw_ptr);
+        /*
+            std::cout << "The AST is: \n\n";
+            ASTPrinter ast_printer;
+            std::cout << ast_printer.print(ast_expression_raw_ptr);
+        */
+        auto [result_object, evaluation_errors] = m_interpreter->interpret(ast_expression_raw_ptr);
+
+        if(evaluation_errors.size() > 0)
+        {
+            std::cout << "ERROR FOUND DURING EVALUATION:\n";
+            for(const auto& error: evaluation_errors)
+            {
+                std::cout << error << "\n";
+            }
+            
+            return;
+        }
+
+        std::cout << "Evaluated Result is :\n\n";
+        std::visit(lang::util::PrintVisitor{}, result_object);
+        std::cout << "\n\n";
     }
 }

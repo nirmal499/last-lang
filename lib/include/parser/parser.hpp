@@ -2,7 +2,8 @@
 
 #include <types/types.hpp>
 #include <token/token.hpp>
-#include <ast/ast.hpp>
+// #include <ast/ast.hpp>
+#include <interpreter/interpret.hpp>
 
 namespace lang
 {
@@ -12,24 +13,24 @@ namespace lang
             Parser()
             {}
 
-            std::pair<lang::ast::Expression*, std::vector<std::string>> parse(std::vector<lang::Token>&& tokens);
+            std::pair<lang::interpret::Expression*, std::vector<std::string>> parse(std::vector<lang::Token>&& tokens);
 
         private:
 
-            lang::ast::Expression* parse_expression();
+            lang::interpret::Expression* parse_expression();
 
-            lang::ast::Expression* parse_equality();
+            lang::interpret::Expression* parse_equality();
 
-            lang::ast::Expression* parse_comparison();
+            lang::interpret::Expression* parse_comparison();
 
-            lang::ast::Expression* parse_term();
+            lang::interpret::Expression* parse_term();
             
 
-            lang::ast::Expression* parse_factor();
+            lang::interpret::Expression* parse_factor();
 
-            lang::ast::Expression* parse_unary();
+            lang::interpret::Expression* parse_unary();
 
-            lang::ast::Expression* parse_primary();
+            lang::interpret::Expression* parse_primary();
 
             lang::Token consume(lang::TokenType type, std::string message);
 
@@ -53,7 +54,7 @@ namespace lang
             std::vector<lang::Token> m_tokens;
             int m_current{0};
 
-            std::vector<std::unique_ptr<lang::ast::Expression>> m_temp_exprs;
+            std::vector<std::unique_ptr<lang::interpret::Expression>> m_temp_exprs;
 
             std::vector<std::string> m_errors;
     };

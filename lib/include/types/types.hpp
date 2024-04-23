@@ -57,5 +57,21 @@ namespace lang
                 std::string msg;
         };
 
+        /* Custom Exception */
+        class evaluation_error: public std::exception
+        {
+            public:
+                /* Constructor with a message */
+                evaluation_error(const char* message): msg(message){}
+
+                /* Override what() method to provide error message */
+                virtual const char* what() const throw() {
+                    return msg.c_str();
+                }
+            
+            private:
+                std::string msg;
+        };
+
     }
 }
