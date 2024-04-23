@@ -3,7 +3,8 @@
 namespace lang
 {
 
-    std::pair<lang::util::object_t, std::vector<std::string>> Interpreter::interpret(lang::interpret::Expression* expression)
+    template<typename T>
+    std::pair<lang::util::object_t, std::vector<std::string>> Interpreter<T>::interpret(lang::ast::Expression<T>* expression)
     {
         m_errors.clear();
 
@@ -19,12 +20,14 @@ namespace lang
         }
     }
 
-    lang::util::object_t Interpreter::evaluate(lang::interpret::Expression* expression)
+    template<typename T>
+    lang::util::object_t Interpreter<T>::evaluate(lang::ast::Expression<T>* expression)
     {
         return expression->accept(this);
     }
 
-    lang::util::object_t Interpreter::visit(lang::interpret::BinaryExpression* expression)
+    template<typename T>
+    T Interpreter<T>::visit(lang::ast::BinaryExpression<T>* expression)
     {
         lang::util::object_t left = this->evaluate(expression->left);
         lang::util::object_t right = this->evaluate(expression->right);
@@ -133,17 +136,20 @@ namespace lang
         return lang::util::null;
     }
 
-    lang::util::object_t Interpreter::visit(lang::interpret::GroupingExpression* expression)
+    template<typename T>
+    T Interpreter<T>::visit(lang::ast::GroupingExpression<T>* expression)
     {
         return this->evaluate(expression);
     }
 
-    lang::util::object_t Interpreter::visit(lang::interpret::LiteralExpression* expression)
+    template<typename T>
+    T Interpreter<T>::visit(lang::ast::LiteralExpression<T>* expression)
     {
         return expression->value;
     }
 
-    lang::util::object_t Interpreter::visit(lang::interpret::UnaryExpression* expression)
+    template<typename T>
+    T Interpreter<T>::visit(lang::ast::UnaryExpression<T>* expression)
     {
         lang::util::object_t right = this->evaluate(expression->value);
 
@@ -175,7 +181,8 @@ namespace lang
         return result;
     }
 
-    lang::util::object_t Interpreter::is_truthy(const lang::util::object_t& object)
+    template<typename T>
+    lang::util::object_t Interpreter<T>::is_truthy(const lang::util::object_t& object)
     {
         if(auto *data = std::get_if<lang::util::null_t>(&object))
         {
@@ -190,7 +197,8 @@ namespace lang
         return true; /* For everything else just return true */
     }
 
-    bool Interpreter::is_equal(const lang::util::object_t& object_A, const lang::util::object_t& object_B)
+    template<typename T>
+    bool Interpreter<T>::is_equal(const lang::util::object_t& object_A, const lang::util::object_t& object_B)
     {
         auto *data_object_A = std::get_if<lang::util::null_t>(&object_A);
         auto *data_object_B = std::get_if<lang::util::null_t>(&object_B);
@@ -232,7 +240,8 @@ namespace lang
         return false;
     }
 
-    void Interpreter::generate_error(int line, std::string message)
+    template<typename T>
+    void Interpreter<T>::generate_error(int line, std::string message)
     {
         std::stringstream buffer;
         buffer << "[line " << line << "] Error : " << message << "\n";
@@ -241,4 +250,7 @@ namespace lang
 
         throw lang::util::evaluation_error("Evaluation Error Caught");
     }
+
+    /* https://stackoverflow.com/questions/8752837/undefined-reference-to-template-class-constructor */
+    template class Interpreter<lang::util::object_t>;
 }

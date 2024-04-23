@@ -7,61 +7,94 @@ namespace lang
 {
     namespace ast
     {   
+        template<typename T>
         struct BinaryExpression;
+
+        template<typename T>
         struct GroupingExpression;
+
+        template<typename T>
         struct LiteralExpression;
+
+        template<typename T>
         struct UnaryExpression;
 
+        template<typename T>
         struct BaseVisitor
         {
-            virtual std::string visit(BinaryExpression* expression) = 0;
-            virtual std::string visit(GroupingExpression* expression) = 0;
-            virtual std::string visit(LiteralExpression* expression) = 0;
-            virtual std::string visit(UnaryExpression* expression) = 0;
+            virtual T visit(BinaryExpression<T>* expression) = 0;
+            virtual T visit(GroupingExpression<T>* expression) = 0;
+            virtual T visit(LiteralExpression<T>* expression) = 0;
+            virtual T visit(UnaryExpression<T>* expression) = 0;
         };
 
+        template<typename T>
         struct Expression
         {
-            virtual std::string accept(BaseVisitor* visitor) = 0;
+            virtual T accept(BaseVisitor<T>* visitor) = 0;
         };
 
-        struct BinaryExpression: public Expression
+        template<typename T>
+        struct BinaryExpression: public Expression<T>
         {
-            Expression* left;
+            Expression<T>* left;
             lang::Token op;
-            Expression* right;
+            Expression<T>* right;
 
-            BinaryExpression(Expression* left, const lang::Token& op, Expression* right);
+            BinaryExpression(Expression<T>* left, const lang::Token& op, Expression<T>* right)
+                : left(std::move(left)), right(std::move(right)), op(op)
+            {}
 
-            std::string accept(BaseVisitor* visitor) override;
+            T accept(BaseVisitor<T>* visitor) override
+            {
+                return visitor->visit(this);
+            }
         };
 
-        struct GroupingExpression: public Expression
+        template<typename T>
+        struct GroupingExpression: public Expression<T>
         {
-            Expression* expr;
+            Expression<T>* expr;
 
-            GroupingExpression(Expression* expression);
+            GroupingExpression(Expression<T>* expression)
+                : expr(std::move(expression))
+            {}
 
-            std::string accept(BaseVisitor* visitor) override;
+            T accept(BaseVisitor<T>* visitor) override
+            {
+                return visitor->visit(this);
+            }
         };
 
-        struct LiteralExpression: public Expression
+        template<typename T>
+        struct LiteralExpression: public Expression<T>
         {
             lang::util::object_t value;
 
-            LiteralExpression(const lang::util::object_t& value);
+            LiteralExpression(const lang::util::object_t& value)
+                : value(value)
+            {}
 
-            std::string accept(BaseVisitor* visitor) override;
+            T accept(BaseVisitor<T>* visitor) override
+            {
+                return visitor->visit(this);
+            }
         };
 
-        struct UnaryExpression: public Expression
+        template<typename T>
+        struct UnaryExpression: public Expression<T>
         {
             lang::Token op;
-            Expression* value;
+            Expression<T>* value;
 
-            UnaryExpression(const lang::Token& op, Expression* value);
+            UnaryExpression(const lang::Token& op, Expression<T>* value)
+                : op(op), value(std::move(value))
+            {}
 
-            std::string accept(BaseVisitor* visitor) override;
+            T accept(BaseVisitor<T>* visitor) override
+            {
+                return visitor->visit(this);
+            }
         };
     }
 }

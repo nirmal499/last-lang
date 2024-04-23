@@ -3,19 +3,28 @@
 #include <types/types.hpp>
 #include <ast/ast.hpp>
 
-struct ASTPrinter: public lang::ast::BaseVisitor
+namespace lang
 {
-    std::string print(lang::ast::Expression* expression);
+    namespace ast
+    {
+        template<typename T>
+        struct ASTPrinter: public lang::ast::BaseVisitor<T>
+        {
+            std::string print(lang::ast::Expression<T>* expression);
 
-    std::string parenthesize(std::string name, lang::ast::Expression* one);
+            std::string parenthesize(std::string name, lang::ast::Expression<T>* one);
 
-    std::string parenthesize(std::string name, lang::ast::Expression* one, lang::ast::Expression* two);
+            std::string parenthesize(std::string name, lang::ast::Expression<T>* one, lang::ast::Expression<T>* two);
 
-    std::string visit(lang::ast::BinaryExpression* expression) override;
+            /************************************************************************************************************/
+            T visit(lang::ast::BinaryExpression<T>* expression) override;
 
-    std::string visit(lang::ast::GroupingExpression* expression) override;
+            T visit(lang::ast::GroupingExpression<T>* expression) override;
 
-    std::string visit(lang::ast::LiteralExpression* expression) override;
+            T visit(lang::ast::LiteralExpression<T>* expression) override;
 
-    std::string visit(lang::ast::UnaryExpression* expression) override;
-};
+            T visit(lang::ast::UnaryExpression<T>* expression) override;
+            /************************************************************************************************************/
+        };
+    }
+}

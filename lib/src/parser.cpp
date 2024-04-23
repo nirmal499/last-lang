@@ -2,7 +2,8 @@
 
 namespace lang
 {
-    std::pair<lang::interpret::Expression*, std::vector<std::string>> Parser::parse(std::vector<lang::Token>&& tokens)
+    template<typename T>
+    std::pair<lang::ast::Expression<T>*, std::vector<std::string>> Parser<T>::parse(std::vector<lang::Token>&& tokens)
     {
         m_tokens = std::move(tokens);
 
@@ -13,7 +14,7 @@ namespace lang
 
         try
         {
-            lang::interpret::Expression* expr = this->parse_expression();
+            lang::ast::Expression<T>* expr = this->parse_expression();
 
             return std::make_pair(expr, std::move(m_errors));
         }
@@ -23,21 +24,23 @@ namespace lang
         }
     }
 
-    lang::interpret::Expression* Parser::parse_expression()
+    template<typename T>
+    lang::ast::Expression<T>* Parser<T>::parse_expression()
     {
         return this->parse_equality();
     }
 
-    lang::interpret::Expression* Parser::parse_equality()
+    template<typename T>
+    lang::ast::Expression<T>* Parser<T>::parse_equality()
     {
-        lang::interpret::Expression* expr = this->parse_comparison();
+        lang::ast::Expression<T>* expr = this->parse_comparison();
 
         while(this->match({lang::TokenType::BANG_EQUAL, lang::TokenType::EQUAL_EQUAL}))
         {
             lang::Token op = this->previous();
-            lang::interpret::Expression* right = this->parse_comparison();
+            lang::ast::Expression<T>* right = this->parse_comparison();
 
-            auto binary_expression = std::make_unique<lang::interpret::BinaryExpression>(expr, op, right);
+            auto binary_expression = std::make_unique<lang::ast::BinaryExpression<T>>(expr, op, right);
             expr = binary_expression.get();
 
             m_temp_exprs.emplace_back(std::move(binary_expression));
@@ -46,16 +49,17 @@ namespace lang
         return expr;
     }
 
-    lang::interpret::Expression* Parser::parse_comparison()
+    template<typename T>
+    lang::ast::Expression<T>* Parser<T>::parse_comparison()
     {
-        lang::interpret::Expression* expr = this->parse_term();
+        lang::ast::Expression<T>* expr = this->parse_term();
 
         while(this->match({lang::TokenType::GREATER, lang::TokenType::GREATER_EQUAL, lang::TokenType::LESS, lang::TokenType::LESS_EQUAL}))
         {
             lang::Token op = this->previous();
-            lang::interpret::Expression* right = this->parse_term();
+            lang::ast::Expression<T>* right = this->parse_term();
 
-            auto binary_expression = std::make_unique<lang::interpret::BinaryExpression>(expr, op, right);
+            auto binary_expression = std::make_unique<lang::ast::BinaryExpression<T>>(expr, op, right);
             expr = binary_expression.get();
 
             m_temp_exprs.emplace_back(std::move(binary_expression));
@@ -64,16 +68,17 @@ namespace lang
         return expr;
     }
 
-    lang::interpret::Expression* Parser::parse_term()
+    template<typename T>
+    lang::ast::Expression<T>* Parser<T>::parse_term()
     {
-        lang::interpret::Expression* expr = this->parse_factor();
+        lang::ast::Expression<T>* expr = this->parse_factor();
 
         while(this->match({lang::TokenType::MINUS, lang::TokenType::PLUS}))
         {
             lang::Token op = this->previous();
-            lang::interpret::Expression* right = this->parse_factor();
+            lang::ast::Expression<T>* right = this->parse_factor();
 
-            auto binary_expression = std::make_unique<lang::interpret::BinaryExpression>(expr, op, right);
+            auto binary_expression = std::make_unique<lang::ast::BinaryExpression<T>>(expr, op, right);
             expr = binary_expression.get();
 
             m_temp_exprs.emplace_back(std::move(binary_expression));
@@ -82,17 +87,17 @@ namespace lang
         return expr;
     }
     
-
-    lang::interpret::Expression* Parser::parse_factor()
+    template<typename T>
+    lang::ast::Expression<T>* Parser<T>::parse_factor()
     {
-        lang::interpret::Expression* expr = this->parse_unary();
+        lang::ast::Expression<T>* expr = this->parse_unary();
 
         while(this->match({lang::TokenType::SLASH, lang::TokenType::STAR}))
         {
             lang::Token op = this->previous();
-            lang::interpret::Expression* right = this->parse_unary();
+            lang::ast::Expression<T>* right = this->parse_unary();
 
-            auto binary_expression = std::make_unique<lang::interpret::BinaryExpression>(expr, op, right);
+            auto binary_expression = std::make_unique<lang::ast::BinaryExpression<T>>(expr, op, right);
             expr = binary_expression.get();
 
             m_temp_exprs.emplace_back(std::move(binary_expression));
@@ -101,15 +106,16 @@ namespace lang
         return expr;
     }
 
-    lang::interpret::Expression* Parser::parse_unary()
+    template<typename T>
+    lang::ast::Expression<T>* Parser<T>::parse_unary()
     {
         if(this->match({lang::TokenType::BANG, lang::TokenType::MINUS}))
         {
             lang::Token op = this->previous();
-            lang::interpret::Expression* right = this->parse_unary();
+            lang::ast::Expression<T>* right = this->parse_unary();
 
-            auto unary_expression = std::make_unique<lang::interpret::UnaryExpression>(op, right);
-            lang::interpret::Expression* expr = unary_expression.get();
+            auto unary_expression = std::make_unique<lang::ast::UnaryExpression<T>>(op, right);
+            lang::ast::Expression<T>* expr = unary_expression.get();
 
             m_temp_exprs.emplace_back(std::move(unary_expression));
 
@@ -119,14 +125,15 @@ namespace lang
         return this->parse_primary();
     }
 
-    lang::interpret::Expression* Parser::parse_primary()
+    template<typename T>
+    lang::ast::Expression<T>* Parser<T>::parse_primary()
     {
-        lang::interpret::Expression* expr;
+        lang::ast::Expression<T>* expr;
 
         if(this->match({lang::TokenType::FALSE}))
         {
             lang::util::object_t value = false;
-            auto literal_expression = std::make_unique<lang::interpret::LiteralExpression>(value);
+            auto literal_expression = std::make_unique<lang::ast::LiteralExpression<T>>(value);
             expr = literal_expression.get();
 
             m_temp_exprs.emplace_back(std::move(literal_expression));
@@ -137,7 +144,7 @@ namespace lang
         if(this->match({lang::TokenType::TRUE}))
         {
             lang::util::object_t value = true;
-            auto literal_expression = std::make_unique<lang::interpret::LiteralExpression>(value);
+            auto literal_expression = std::make_unique<lang::ast::LiteralExpression<T>>(value);
             expr = literal_expression.get();
 
             m_temp_exprs.emplace_back(std::move(literal_expression));
@@ -148,7 +155,7 @@ namespace lang
         if(this->match({lang::TokenType::NIL}))
         {
             lang::util::object_t value = lang::util::null;
-            auto literal_expression = std::make_unique<lang::interpret::LiteralExpression>(value);
+            auto literal_expression = std::make_unique<lang::ast::LiteralExpression<T>>(value);
             expr = literal_expression.get();
 
             m_temp_exprs.emplace_back(std::move(literal_expression));
@@ -159,7 +166,7 @@ namespace lang
         if(this->match({lang::TokenType::NUMBER, lang::TokenType::STRING}))
         {
             lang::util::object_t value = this->previous().m_literal;
-            auto literal_expression = std::make_unique<lang::interpret::LiteralExpression>(value);
+            auto literal_expression = std::make_unique<lang::ast::LiteralExpression<T>>(value);
             expr = literal_expression.get();
 
             m_temp_exprs.emplace_back(std::move(literal_expression));
@@ -172,7 +179,7 @@ namespace lang
             expr = this->parse_expression();
             (void)this->consume(lang::TokenType::RIGHT_PAREN, "Expecting ')' after expression.");
 
-            auto grouping_expression = std::make_unique<lang::interpret::GroupingExpression>(expr);
+            auto grouping_expression = std::make_unique<lang::ast::GroupingExpression<T>>(expr);
             expr = grouping_expression.get();
 
             m_temp_exprs.emplace_back(std::move(grouping_expression));
@@ -185,7 +192,8 @@ namespace lang
         return nullptr; // Unreachable
     }
 
-    lang::Token Parser::consume(lang::TokenType type, std::string message)
+    template<typename T>
+    lang::Token Parser<T>::consume(lang::TokenType type, std::string message)
     {
         if(this->check(type))
         {
@@ -196,8 +204,9 @@ namespace lang
 
         return lang::Token{lang::TokenType::MYEOF, "DEAD END", lang::util::null, 1}; // Unreachable
     }
-
-    void Parser::error(Token token, std::string message)
+    
+    template<typename T>
+    void Parser<T>::error(Token token, std::string message)
     {
         if(token.m_type == lang::TokenType::MYEOF)
         {
@@ -210,8 +219,9 @@ namespace lang
 
         throw lang::util::parser_error("Parser Error Caught");
     }
-
-    void Parser::generate_error(int line, std::string message)
+    
+    template<typename T>
+    void Parser<T>::generate_error(int line, std::string message)
     {
         std::stringstream buffer;
         buffer << "[line " << line << "] Error : " << message << "\n";
@@ -219,7 +229,8 @@ namespace lang
         m_errors.emplace_back(buffer.str());
     }
     
-    bool Parser::match(const std::initializer_list<lang::TokenType>& matching_list)
+    template<typename T>
+    bool Parser<T>::match(const std::initializer_list<lang::TokenType>& matching_list)
     {
         for(const auto& type: matching_list)
         {
@@ -233,7 +244,8 @@ namespace lang
         return false;
     }
 
-    bool Parser::check(lang::TokenType type)
+    template<typename T>
+    bool Parser<T>::check(lang::TokenType type)
     {
         if(this->is_at_end())
         {
@@ -243,7 +255,8 @@ namespace lang
         return this->peek().m_type == type;
     }
 
-    lang::Token Parser::advance()
+    template<typename T>
+    lang::Token Parser<T>::advance()
     {
         if(!this->is_at_end())
         {
@@ -253,18 +266,25 @@ namespace lang
         return this->previous();
     }
 
-    bool Parser::is_at_end()
+    template<typename T>
+    bool Parser<T>::is_at_end()
     {
         return this->peek().m_type == lang::TokenType::MYEOF;
     }
 
-    Token Parser::peek()
+    template<typename T>
+    Token Parser<T>::peek()
     {
         return m_tokens.at(m_current);
     }
 
-    Token Parser::previous()
+    template<typename T>
+    Token Parser<T>::previous()
     {
         return m_tokens.at(m_current - 1);
     }
+
+    /* https://stackoverflow.com/questions/8752837/undefined-reference-to-template-class-constructor */
+    template class Parser<std::string>;
+    template class Parser<lang::util::object_t>;
 }

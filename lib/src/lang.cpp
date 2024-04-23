@@ -1,5 +1,4 @@
 #include <lang/lang.hpp>
-#include <ast/ast_printer.hpp>
 
 namespace lang
 {
@@ -73,11 +72,12 @@ namespace lang
 
     void Lang::run(std::string&& source)
     {
+        /********************************************************************************************************/
         auto [tokens, tokenization_errors] = m_lexer->tokenize(std::move(source));
         
         if(tokenization_errors.size() > 0)
         {
-            std::cout << "ERROR FOUND DURING TOKENIZATION:\n";
+            std::cout << "\nERROR FOUND DURING TOKENIZATION:\n";
             for(const auto& error: tokenization_errors)
             {
                 std::cout << error << "\n";
@@ -85,30 +85,48 @@ namespace lang
             
             return;
         }
+        /********************************************************************************************************/
 
-        auto [ast_expression_raw_ptr, parsing_errors] = m_parser->parse(std::move(tokens));
+        auto tokens_copy = tokens;
 
-        if(ast_expression_raw_ptr == nullptr || parsing_errors.size() > 0)
+        /********************************************************************************************************/
+        auto [ast_expression_raw_ptr_for_ast_printer, parsing_errors_for_ast_printer] = m_parser_ast_printer->parse(std::move(tokens));
+
+        if(ast_expression_raw_ptr_for_ast_printer == nullptr || parsing_errors_for_ast_printer.size() > 0)
         {
-            std::cout << "ERROR FOUND DURING PARSING:\n";
-            for(const auto& error: parsing_errors)
+            std::cout << "\nERROR FOUND DURING PARSING FOR AST_PRINTER:\n";
+            for(const auto& error: parsing_errors_for_ast_printer)
             {
                 std::cout << error << "\n";
             }
             
             return;
         }
+        
+        std::cout << "\nThe AST is: \n\n";
+        std::cout << m_ast_printer->print(ast_expression_raw_ptr_for_ast_printer);
+        /********************************************************************************************************/
 
-        /*
-            std::cout << "The AST is: \n\n";
-            ASTPrinter ast_printer;
-            std::cout << ast_printer.print(ast_expression_raw_ptr);
-        */
-        auto [result_object, evaluation_errors] = m_interpreter->interpret(ast_expression_raw_ptr);
+        /********************************************************************************************************/
+        auto [ast_expression_raw_ptr_for_ast_interpreter, parsing_errors_for_ast_interpreter] = m_parser_ast_interpreter->parse(std::move(tokens_copy));
+
+        if(ast_expression_raw_ptr_for_ast_interpreter == nullptr || parsing_errors_for_ast_interpreter.size() > 0)
+        {
+            std::cout << "\nERROR FOUND DURING PARSING FOR AST_INTERPRETER:\n";
+            for(const auto& error: parsing_errors_for_ast_interpreter)
+            {
+                std::cout << error << "\n";
+            }
+            
+            return;
+        }
+        /********************************************************************************************************/
+
+        auto [result_object, evaluation_errors] = m_ast_interpreter->interpret(ast_expression_raw_ptr_for_ast_interpreter);
 
         if(evaluation_errors.size() > 0)
         {
-            std::cout << "ERROR FOUND DURING EVALUATION:\n";
+            std::cout << "\nERROR FOUND DURING EVALUATION:\n";
             for(const auto& error: evaluation_errors)
             {
                 std::cout << error << "\n";
@@ -117,7 +135,7 @@ namespace lang
             return;
         }
 
-        std::cout << "Evaluated Result is :\n\n";
+        std::cout << "\nEvaluated Result is :\n\n";
         std::visit(lang::util::PrintVisitor{}, result_object);
         std::cout << "\n\n";
     }

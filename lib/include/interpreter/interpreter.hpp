@@ -1,27 +1,30 @@
 #pragma once
 
 #include <types/types.hpp>
-#include <interpreter/interpret.hpp>
+#include <ast/ast.hpp>
 
 namespace lang
 {
-    class Interpreter: public lang::interpret::BaseVisitor
+    template<typename T>
+    class Interpreter: public lang::ast::BaseVisitor<T>
     {
         public:
             Interpreter(){}
 
-            std::pair<lang::util::object_t, std::vector<std::string>> interpret(lang::interpret::Expression* expression);
+            std::pair<lang::util::object_t, std::vector<std::string>> interpret(lang::ast::Expression<T>* expression);
 
         private:
-            lang::util::object_t evaluate(lang::interpret::Expression* expression);
+            lang::util::object_t evaluate(lang::ast::Expression<T>* expression);
 
-            lang::util::object_t visit(lang::interpret::BinaryExpression* expression) override;
+            /*************************************************************************************************************/
+            T visit(lang::ast::BinaryExpression<T>* expression) override;
 
-            lang::util::object_t visit(lang::interpret::GroupingExpression* expression) override;
+            T visit(lang::ast::GroupingExpression<T>* expression) override;
 
-            lang::util::object_t visit(lang::interpret::LiteralExpression* expression) override;
+            T visit(lang::ast::LiteralExpression<T>* expression) override;
 
-            lang::util::object_t visit(lang::interpret::UnaryExpression* expression) override;
+            T visit(lang::ast::UnaryExpression<T>* expression) override;
+            /*************************************************************************************************************/
 
             lang::util::object_t is_truthy(const lang::util::object_t& object);
 
