@@ -1,11 +1,5 @@
-add_executable(${EXECUTABLE_NAME_1} main.cpp)
+add_executable(${EXECUTABLE_NAME} main.cpp)
 
-target_link_libraries(${EXECUTABLE_NAME_1} 
-	PUBLIC ${LIBRARY_NAME}
-)
-
-add_executable(${EXECUTABLE_NAME_2} ast_print.cpp)
-
-target_link_libraries(${EXECUTABLE_NAME_2} 
+target_link_libraries(${EXECUTABLE_NAME} 
 	PUBLIC ${LIBRARY_NAME}
 )

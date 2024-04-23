@@ -2,32 +2,36 @@
 
 namespace lang
 {
-
-    template<typename T>
-    std::pair<lang::util::object_t, std::vector<std::string>> Interpreter<T>::interpret(lang::ast::Expression<T>* expression)
+    std::vector<std::string> Interpreter::interpret(std::vector<lang::ast::Statement*>&& statements)
     {
         m_errors.clear();
 
         try
         {
-            lang::util::object_t result = this->evaluate(expression);
+            for(const auto& stmt: statements)
+            {
+                this->execute(stmt);
+            }
 
-            return std::make_pair(std::move(result), std::move(m_errors));
+            return std::move(m_errors);
         }
         catch(const std::exception& e)
         {
-            return std::make_pair(lang::util::null, std::move(m_errors));
+            return std::move(m_errors);
         }
     }
 
-    template<typename T>
-    lang::util::object_t Interpreter<T>::evaluate(lang::ast::Expression<T>* expression)
+    lang::util::object_t Interpreter::evaluate(lang::ast::Expression* expression)
     {
         return expression->accept(this);
     }
 
-    template<typename T>
-    T Interpreter<T>::visit(lang::ast::BinaryExpression<T>* expression)
+    void Interpreter::execute(lang::ast::Statement* statement)
+    {
+        statement->accept(this);
+    }
+
+    lang::util::object_t Interpreter::visit(lang::ast::BinaryExpression* expression)
     {
         lang::util::object_t left = this->evaluate(expression->left);
         lang::util::object_t right = this->evaluate(expression->right);
@@ -136,20 +140,32 @@ namespace lang
         return lang::util::null;
     }
 
-    template<typename T>
-    T Interpreter<T>::visit(lang::ast::GroupingExpression<T>* expression)
+    lang::util::object_t Interpreter::visit(lang::ast::GroupingExpression* expression)
     {
         return this->evaluate(expression);
     }
 
-    template<typename T>
-    T Interpreter<T>::visit(lang::ast::LiteralExpression<T>* expression)
+    lang::util::object_t Interpreter::visit(lang::ast::LiteralExpression* expression)
     {
         return expression->value;
     }
 
-    template<typename T>
-    T Interpreter<T>::visit(lang::ast::UnaryExpression<T>* expression)
+    void Interpreter::visit(lang::ast::ExpressionStatement* statement)
+    {
+        (void)this->evaluate(statement->expr);
+        
+        return;
+    }
+
+    void Interpreter::visit(lang::ast::PrintStatement* statement)
+    {
+        lang::util::object_t value = this->evaluate(statement->expr);
+        std::visit(lang::util::PrintVisitor{}, value); /* This is our language's print statement */
+
+        return;
+    }
+
+    lang::util::object_t Interpreter::visit(lang::ast::UnaryExpression* expression)
     {
         lang::util::object_t right = this->evaluate(expression->value);
 
@@ -181,8 +197,7 @@ namespace lang
         return result;
     }
 
-    template<typename T>
-    lang::util::object_t Interpreter<T>::is_truthy(const lang::util::object_t& object)
+    lang::util::object_t Interpreter::is_truthy(const lang::util::object_t& object)
     {
         if(auto *data = std::get_if<lang::util::null_t>(&object))
         {
@@ -197,8 +212,7 @@ namespace lang
         return true; /* For everything else just return true */
     }
 
-    template<typename T>
-    bool Interpreter<T>::is_equal(const lang::util::object_t& object_A, const lang::util::object_t& object_B)
+    bool Interpreter::is_equal(const lang::util::object_t& object_A, const lang::util::object_t& object_B)
     {
         auto *data_object_A = std::get_if<lang::util::null_t>(&object_A);
         auto *data_object_B = std::get_if<lang::util::null_t>(&object_B);
@@ -240,8 +254,7 @@ namespace lang
         return false;
     }
 
-    template<typename T>
-    void Interpreter<T>::generate_error(int line, std::string message)
+    void Interpreter::generate_error(int line, std::string message)
     {
         std::stringstream buffer;
         buffer << "[line " << line << "] Error : " << message << "\n";
@@ -250,7 +263,4 @@ namespace lang
 
         throw lang::util::evaluation_error("Evaluation Error Caught");
     }
-
-    /* https://stackoverflow.com/questions/8752837/undefined-reference-to-template-class-constructor */
-    template class Interpreter<lang::util::object_t>;
 }

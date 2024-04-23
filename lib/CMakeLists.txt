@@ -2,8 +2,6 @@ add_library(${LIBRARY_NAME} STATIC
     src/lang.cpp
     src/lexer.cpp
 
-    src/ast_printer.cpp
-
     src/parser.cpp
 
     src/interpreter.cpp

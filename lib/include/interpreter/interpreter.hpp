@@ -5,25 +5,32 @@
 
 namespace lang
 {
-    template<typename T>
-    class Interpreter: public lang::ast::BaseVisitor<T>
+    class Interpreter: public lang::ast::BaseVisitorForExpression, public lang::ast::BaseVisitorForStatement
     {
         public:
             Interpreter(){}
 
-            std::pair<lang::util::object_t, std::vector<std::string>> interpret(lang::ast::Expression<T>* expression);
+            std::vector<std::string> interpret(std::vector<lang::ast::Statement*>&& statements);
 
         private:
-            lang::util::object_t evaluate(lang::ast::Expression<T>* expression);
+            lang::util::object_t evaluate(lang::ast::Expression* expression);
+            void execute(lang::ast::Statement* statement);
 
             /*************************************************************************************************************/
-            T visit(lang::ast::BinaryExpression<T>* expression) override;
+            lang::util::object_t visit(lang::ast::BinaryExpression* expression) override;
 
-            T visit(lang::ast::GroupingExpression<T>* expression) override;
+            lang::util::object_t visit(lang::ast::GroupingExpression* expression) override;
 
-            T visit(lang::ast::LiteralExpression<T>* expression) override;
+            lang::util::object_t visit(lang::ast::LiteralExpression* expression) override;
 
-            T visit(lang::ast::UnaryExpression<T>* expression) override;
+            lang::util::object_t visit(lang::ast::UnaryExpression* expression) override;
+
+            /*************************************************************************************************************/
+
+            void visit(lang::ast::ExpressionStatement* statement) override;
+            
+            void visit(lang::ast::PrintStatement* statement) override;
+
             /*************************************************************************************************************/
 
             lang::util::object_t is_truthy(const lang::util::object_t& object);

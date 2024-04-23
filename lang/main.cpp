@@ -11,7 +11,7 @@ int main(int argc, const char* argv[])
     {
         lang::Lang application;
 
-        if(argc > 2)
+        if(argc > 2 || argc <= 1)
         {
             std::cout << "Usage: last [absolute_path_to_the_source_code_file]\n";
             return EXIT_FAILURE;
@@ -25,11 +25,6 @@ int main(int argc, const char* argv[])
             }
 
             application.run_source_code(argv[1]);
-            return EXIT_SUCCESS;
-        }
-        else
-        {
-            application.run_repl();
             return EXIT_SUCCESS;
         }
 
