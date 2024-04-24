@@ -12,15 +12,26 @@ namespace lang
                 return it->second;
             }
 
+            if(m_enclosing != nullptr)
+            {
+                return m_enclosing->get(name);
+            }
+
             throw std::runtime_error("Undefined variable '" + name.m_lexeme + "'.");
         }
 
-        void Environment::assign(const lang::Token& name, lang::util::object_t value)
+        void Environment::assign(const lang::Token& name, const lang::util::object_t& value)
         {   
             auto it = m_values.find(name.m_lexeme);
             if(it != m_values.end())
             {
                 m_values[name.m_lexeme] = value;
+                return;
+            }
+
+            if(m_enclosing != nullptr)
+            {
+                m_enclosing->assign(name, value);
                 return;
             }
 

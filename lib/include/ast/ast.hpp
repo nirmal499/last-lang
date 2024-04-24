@@ -12,12 +12,14 @@ namespace lang
         struct ExpressionStatement;
         struct PrintStatement;
         struct VarStatement;
+        struct BlockStatement;
         
         struct BaseVisitorForStatement
         {
             virtual void visit(ExpressionStatement* statement) = 0;
             virtual void visit(PrintStatement* statement) = 0;
             virtual void visit(VarStatement* statement) = 0;
+            virtual void visit(BlockStatement* statement) = 0;
         };
 
         struct Statement
@@ -85,6 +87,20 @@ namespace lang
 
             VarStatement(const lang::Token& name, Expression* initializer)
                 : name(name), initializer(std::move(initializer))
+            {}
+
+            void accept(BaseVisitorForStatement* visitor) override
+            {
+                return visitor->visit(this);
+            }
+        };
+
+        struct BlockStatement: public Statement
+        {
+            std::vector<Statement*> statements;
+
+            BlockStatement(std::vector<Statement*>&& statements)
+                : statements(std::move(statements))
             {}
 
             void accept(BaseVisitorForStatement* visitor) override

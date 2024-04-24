@@ -1,5 +1,23 @@
-var a = 1;
-var b = 1;
+var a = "global a";
+var b = "global b";
+var c = "global c";
 
-print a = 2;
+{
+    var a = "outer a";
+    var b = "outer b";
 
+    {
+        var a = "inner a";
+        print a;
+        print b;
+        print c;
+    }
+
+    print a;
+    print b;
+    print c;
+}
+
+print a;
+print b;
+print c;

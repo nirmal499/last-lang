@@ -65,7 +65,31 @@ namespace lang
             return this->parse_print_statement();
         }
 
+        if(this->match({lang::TokenType::LEFT_BRACE}))
+        {
+            std::vector<lang::ast::Statement*> stmts = this->parse_block();
+            auto block_statement = std::make_unique<lang::ast::BlockStatement>(std::move(stmts));
+            lang::ast::Statement* temp = block_statement.get();
+
+            m_temp_stmts.emplace_back(std::move(block_statement));
+            return temp;
+        }
+
         return this->parse_expression_statement();
+    }
+
+    std::vector<lang::ast::Statement*> Parser::parse_block()
+    {
+        std::vector<lang::ast::Statement*> statements;
+
+        while(!this->check(lang::TokenType::RIGHT_BRACE) && !this->is_at_end())
+        {
+            statements.emplace_back(this->parse_declaration());
+        }
+
+        (void)this->consume(lang::TokenType::RIGHT_BRACE, "Expect '}' after block");
+
+        return statements;
     }
 
     lang::ast::Statement* Parser::parse_print_statement()

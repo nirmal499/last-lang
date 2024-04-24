@@ -33,7 +33,7 @@ namespace lang
         struct PrintVisitor
         {
             void operator()(double value) const { std::cout << value; }
-            void operator()(const std::string& value) const { std::cout << value; }
+            void operator()(const std::string& value) const { std::cout << value << "\n"; }
             void operator()(bool value) const { std::cout << std::boolalpha << value; }
             void operator()(null_t value) const
             {

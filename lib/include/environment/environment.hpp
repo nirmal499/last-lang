@@ -10,13 +10,19 @@ namespace lang
         class Environment
         {
             public:
+
+                Environment(Environment* enclosing)
+                    : m_enclosing(enclosing)
+                {}
+
                 lang::util::object_t get(const lang::Token& name);
                 
                 void define(const std::string& name, const lang::util::object_t& value);
 
-                void assign(const lang::Token& name, lang::util::object_t value);
+                void assign(const lang::Token& name, const lang::util::object_t& value);
             private:
                 std::unordered_map<std::string, lang::util::object_t> m_values;
+                Environment* m_enclosing = nullptr;
         };
     }
 }

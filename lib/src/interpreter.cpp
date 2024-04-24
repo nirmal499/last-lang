@@ -6,6 +6,11 @@ namespace lang
     {
         m_errors.clear();
 
+        auto environment = std::make_unique<lang::env::Environment>(nullptr);
+        m_environment = environment.get();
+
+        m_temp_envs.emplace_back(std::move(environment));
+
         try
         {
             for(const auto& stmt: statements)
@@ -177,12 +182,40 @@ namespace lang
         return;
     }
 
+    void Interpreter::visit(lang::ast::BlockStatement* statement)
+    {
+        auto environment = std::make_unique<lang::env::Environment>(m_environment);
+        lang::env::Environment* temp = environment.get();
+
+        m_temp_envs.emplace_back(std::move(environment));
+
+        this->execute_block(statement->statements, temp);
+    }
+
+    void Interpreter::execute_block(const std::vector<lang::ast::Statement*> stmts, lang::env::Environment* env)
+    {
+        lang::env::Environment* temp_env = m_environment;
+        try
+        {
+            m_environment = env;
+            for(auto const& stmt: stmts)
+            {
+                this->execute(stmt);
+            }
+        }
+        catch(...)
+        {}
+
+        /* finally */
+        m_environment = temp_env; /* Restore back our environment */
+    }
+
     lang::util::object_t Interpreter::visit(lang::ast::VariableExpression* expression)
     {
         lang::util::object_t value = lang::util::null;
         try
         {
-            lang::util::object_t value = m_environment->get(expression->name);
+            value = m_environment->get(expression->name);
 
         } catch(const std::exception& e)
         {

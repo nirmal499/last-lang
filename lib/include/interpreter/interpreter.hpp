@@ -16,6 +16,7 @@ namespace lang
         private:
             lang::util::object_t evaluate(lang::ast::Expression* expression);
             void execute(lang::ast::Statement* statement);
+            void execute_block(const std::vector<lang::ast::Statement*> stmts, lang::env::Environment* env);
 
             /*************************************************************************************************************/
             lang::util::object_t visit(lang::ast::BinaryExpression* expression) override;
@@ -37,6 +38,8 @@ namespace lang
             void visit(lang::ast::PrintStatement* statement) override;
 
             void visit(lang::ast::VarStatement* statement) override;
+            
+            void visit(lang::ast::BlockStatement* statement) override;
 
             /*************************************************************************************************************/
 
@@ -48,6 +51,8 @@ namespace lang
 
         private:
             std::vector<std::string> m_errors;
-            std::unique_ptr<lang::env::Environment> m_environment = std::make_unique<lang::env::Environment>();
+            lang::env::Environment* m_environment = nullptr;
+
+            std::vector<std::unique_ptr<lang::env::Environment>> m_temp_envs;
     };
 }

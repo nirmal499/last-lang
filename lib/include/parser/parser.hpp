@@ -22,6 +22,7 @@ namespace lang
             lang::ast::Statement* parse_statement();
             lang::ast::Statement* parse_print_statement();
             lang::ast::Statement* parse_expression_statement();
+            std::vector<lang::ast::Statement*> parse_block();
 
             
             lang::ast::Expression* parse_expression();
