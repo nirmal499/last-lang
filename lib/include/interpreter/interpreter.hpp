@@ -2,6 +2,7 @@
 
 #include <types/types.hpp>
 #include <ast/ast.hpp>
+#include <environment/environment.hpp>
 
 namespace lang
 {
@@ -24,12 +25,17 @@ namespace lang
             lang::util::object_t visit(lang::ast::LiteralExpression* expression) override;
 
             lang::util::object_t visit(lang::ast::UnaryExpression* expression) override;
+            
+            lang::util::object_t visit(lang::ast::VariableExpression* expression) override;
+
 
             /*************************************************************************************************************/
 
             void visit(lang::ast::ExpressionStatement* statement) override;
             
             void visit(lang::ast::PrintStatement* statement) override;
+
+            void visit(lang::ast::VarStatement* statement) override;
 
             /*************************************************************************************************************/
 
@@ -41,5 +47,6 @@ namespace lang
 
         private:
             std::vector<std::string> m_errors;
+            std::unique_ptr<lang::env::Environment> m_environment = std::make_unique<lang::env::Environment>();
     };
 }

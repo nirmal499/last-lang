@@ -164,6 +164,23 @@ namespace lang
 
         return;
     }
+    
+    void Interpreter::visit(lang::ast::VarStatement* statement)
+    {
+        lang::util::object_t value = lang::util::null;
+        if(statement->initializer != nullptr)
+        {
+            value = this->evaluate(statement->initializer);
+        }
+        m_environment->define(statement->name.m_lexeme, value);
+
+        return;
+    }
+
+    lang::util::object_t Interpreter::visit(lang::ast::VariableExpression* expression)
+    {
+        return m_environment->get(expression->name);
+    }
 
     lang::util::object_t Interpreter::visit(lang::ast::UnaryExpression* expression)
     {

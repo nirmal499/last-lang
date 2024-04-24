@@ -11,11 +11,13 @@ namespace lang
         /**********************************************************************************************************************8*/
         struct ExpressionStatement;
         struct PrintStatement;
+        struct VarStatement;
         
         struct BaseVisitorForStatement
         {
             virtual void visit(ExpressionStatement* statement) = 0;
             virtual void visit(PrintStatement* statement) = 0;
+            virtual void visit(VarStatement* statement) = 0;
         };
 
         struct Statement
@@ -29,6 +31,7 @@ namespace lang
         struct GroupingExpression;
         struct LiteralExpression;
         struct UnaryExpression;
+        struct VariableExpression;
 
         struct BaseVisitorForExpression
         {
@@ -36,6 +39,7 @@ namespace lang
             virtual lang::util::object_t visit(GroupingExpression* expression) = 0;
             virtual lang::util::object_t visit(LiteralExpression* expression) = 0;
             virtual lang::util::object_t visit(UnaryExpression* expression) = 0;
+            virtual lang::util::object_t visit(VariableExpression* expression) = 0;
         };
 
         struct Expression
@@ -64,6 +68,21 @@ namespace lang
 
             PrintStatement(Expression* expr)
                 : expr(std::move(expr))
+            {}
+
+            void accept(BaseVisitorForStatement* visitor) override
+            {
+                return visitor->visit(this);
+            }
+        };
+
+        struct VarStatement: public Statement
+        {
+            lang::Token name;
+            Expression* initializer;
+
+            VarStatement(const lang::Token& name, Expression* initializer)
+                : name(name), initializer(std::move(initializer))
             {}
 
             void accept(BaseVisitorForStatement* visitor) override
@@ -125,6 +144,20 @@ namespace lang
 
             UnaryExpression(const lang::Token& op, Expression* value)
                 : op(op), value(std::move(value))
+            {}
+
+            lang::util::object_t accept(BaseVisitorForExpression* visitor) override
+            {
+                return visitor->visit(this);
+            }
+        };
+
+        struct VariableExpression: public Expression
+        {
+            lang::Token name;
+
+            VariableExpression(const lang::Token& name)
+                : name(name)
             {}
 
             lang::util::object_t accept(BaseVisitorForExpression* visitor) override

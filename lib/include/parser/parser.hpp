@@ -15,6 +15,9 @@ namespace lang
             std::pair<std::vector<lang::ast::Statement*>, std::vector<std::string>> parse(std::vector<lang::Token>&& tokens);
 
         private:
+            lang::ast::Statement* parse_declaration();
+
+            lang::ast::Statement* parse_var_declaration();
 
             lang::ast::Statement* parse_statement();
             lang::ast::Statement* parse_print_statement();
@@ -52,6 +55,8 @@ namespace lang
             Token peek();
 
             Token previous();
+
+            void synchronize_after_an_exception();
 
         private:
             std::vector<lang::Token> m_tokens;

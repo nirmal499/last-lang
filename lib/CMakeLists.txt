@@ -5,6 +5,7 @@ add_library(${LIBRARY_NAME} STATIC
     src/parser.cpp
 
     src/interpreter.cpp
+    src/environment.cpp
 )
 
 target_include_directories(${LIBRARY_NAME} 

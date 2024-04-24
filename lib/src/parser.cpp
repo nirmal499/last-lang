@@ -14,10 +14,48 @@ namespace lang
 
         while(!this->is_at_end())
         {
-            m_statements.emplace_back(this->parse_statement());
+            m_statements.emplace_back(this->parse_declaration());
         }
 
         return std::make_pair(std::move(m_statements), std::move(m_errors));;
+    }
+
+    lang::ast::Statement* Parser::parse_declaration()
+    {
+        try
+        {
+            if(this->match({lang::TokenType::VAR}))
+            {
+                return this->parse_var_declaration();
+            }
+
+            return this->parse_statement();
+        }
+        catch(const std::exception& e)
+        {
+            this->synchronize_after_an_exception();
+            return nullptr;
+        }
+    }
+
+    lang::ast::Statement* Parser::parse_var_declaration()
+    {
+        lang::Token name = this->consume(lang::TokenType::IDENTIFIER, "Expect variable name.");
+        lang::ast::Expression* initializer = nullptr;
+
+        if(this->match({lang::TokenType::EQUAL}))
+        {
+            initializer = this->parse_expression();
+        }
+
+        (void)this->consume(lang::TokenType::SEMICOLON, "Expect ';' after variable declaration");
+
+        auto var_statement = std::make_unique<lang::ast::VarStatement>(name, initializer);
+        lang::ast::Statement* temp = var_statement.get();
+
+        m_temp_stmts.emplace_back(std::move(var_statement));
+
+        return temp;
     }
 
     lang::ast::Statement* Parser::parse_statement()
@@ -199,6 +237,16 @@ namespace lang
             return expr;
         }
 
+        if(this->match({lang::TokenType::IDENTIFIER}))
+        {
+            auto variable_expression = std::make_unique<lang::ast::VariableExpression>(this->previous());
+            expr = variable_expression.get();
+
+            m_temp_exprs.emplace_back(std::move(variable_expression));
+
+            return expr;
+        }
+
         if(this->match({lang::TokenType::LEFT_PAREN}))
         {
             expr = this->parse_expression();
@@ -273,6 +321,39 @@ namespace lang
         }
 
         return this->peek().m_type == type;
+    }
+
+    void Parser::synchronize_after_an_exception()
+    {
+        this->advance();
+
+        while(!this->is_at_end())
+        {
+            if(this->previous().m_type == lang::TokenType::SEMICOLON)
+            {
+                /* 
+                    We have reached the end of the statement which caused an exception. 
+                    So we return inorder to parse the other statements after this error statements
+                */
+                return;
+            }
+
+            switch(this->peek().m_type)
+            {
+                case lang::TokenType::CLASS:
+                case lang::TokenType::FUN:
+                case lang::TokenType::VAR:
+                case lang::TokenType::FOR:
+                case lang::TokenType::IF:
+                case lang::TokenType::WHILE:
+                case lang::TokenType::PRINT:
+                case lang::TokenType::RETURN:
+                    return;
+
+            }
+
+            this->advance();
+        }
     }
 
     lang::Token Parser::advance()
