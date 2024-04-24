@@ -15,6 +15,18 @@ namespace lang
             throw std::runtime_error("Undefined variable '" + name.m_lexeme + "'.");
         }
 
+        void Environment::assign(const lang::Token& name, lang::util::object_t value)
+        {   
+            auto it = m_values.find(name.m_lexeme);
+            if(it != m_values.end())
+            {
+                m_values[name.m_lexeme] = value;
+                return;
+            }
+
+            throw std::runtime_error("Undefined variable '" + name.m_lexeme + "'.");
+        }
+
         void Environment::define(const std::string& name, const lang::util::object_t& value)
         {
             m_values[name] = value;

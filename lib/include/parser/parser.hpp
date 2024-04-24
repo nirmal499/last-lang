@@ -23,7 +23,9 @@ namespace lang
             lang::ast::Statement* parse_print_statement();
             lang::ast::Statement* parse_expression_statement();
 
+            
             lang::ast::Expression* parse_expression();
+            lang::ast::Expression* parse_assignment();
 
             lang::ast::Expression* parse_equality();
 

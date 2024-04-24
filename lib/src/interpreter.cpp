@@ -179,7 +179,33 @@ namespace lang
 
     lang::util::object_t Interpreter::visit(lang::ast::VariableExpression* expression)
     {
-        return m_environment->get(expression->name);
+        lang::util::object_t value = lang::util::null;
+        try
+        {
+            lang::util::object_t value = m_environment->get(expression->name);
+
+        } catch(const std::exception& e)
+        {
+            this->generate_error(expression->name.m_line, e.what());
+        }
+
+        return value;
+    }
+
+    lang::util::object_t Interpreter::visit(lang::ast::AssignmentExpression* expression)
+    {
+        lang::util::object_t value = this->evaluate(expression->value);
+
+        try
+        {
+            m_environment->assign(expression->name, value);
+
+        } catch(const std::exception& e)
+        {
+            this->generate_error(expression->name.m_line, e.what());
+        }
+
+        return value;
     }
 
     lang::util::object_t Interpreter::visit(lang::ast::UnaryExpression* expression)

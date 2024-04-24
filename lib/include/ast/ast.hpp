@@ -32,6 +32,7 @@ namespace lang
         struct LiteralExpression;
         struct UnaryExpression;
         struct VariableExpression;
+        struct AssignmentExpression;
 
         struct BaseVisitorForExpression
         {
@@ -40,6 +41,7 @@ namespace lang
             virtual lang::util::object_t visit(LiteralExpression* expression) = 0;
             virtual lang::util::object_t visit(UnaryExpression* expression) = 0;
             virtual lang::util::object_t visit(VariableExpression* expression) = 0;
+            virtual lang::util::object_t visit(AssignmentExpression* expression) = 0;
         };
 
         struct Expression
@@ -158,6 +160,22 @@ namespace lang
 
             VariableExpression(const lang::Token& name)
                 : name(name)
+            {}
+
+            lang::util::object_t accept(BaseVisitorForExpression* visitor) override
+            {
+                return visitor->visit(this);
+            }
+        };
+
+        struct AssignmentExpression: public Expression
+        {
+            lang::Token name;
+            Expression* value;
+
+
+            AssignmentExpression(const lang::Token& name, Expression* value)
+                : name(name), value(value)
             {}
 
             lang::util::object_t accept(BaseVisitorForExpression* visitor) override

@@ -28,6 +28,7 @@ namespace lang
             
             lang::util::object_t visit(lang::ast::VariableExpression* expression) override;
 
+            lang::util::object_t visit(lang::ast::AssignmentExpression* expression) override;
 
             /*************************************************************************************************************/
 

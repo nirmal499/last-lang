@@ -96,8 +96,35 @@ namespace lang
 
     lang::ast::Expression* Parser::parse_expression()
     {
-        return this->parse_equality();
+        return this->parse_assignment();
     }
+
+    lang::ast::Expression* Parser::parse_assignment()
+    {
+        lang::ast::Expression* expr = this->parse_equality();
+
+        if(this->match({lang::TokenType::EQUAL}))
+        {
+            lang::Token equals = this->previous();
+            lang::ast::Expression* value = this->parse_assignment();
+
+            if(lang::ast::VariableExpression* var_expr = dynamic_cast<lang::ast::VariableExpression*>(expr))
+            {
+                lang::Token name = var_expr->name;
+                auto assignment_expression = std::make_unique<lang::ast::AssignmentExpression>(name, value);
+                lang::ast::Expression* temp = assignment_expression.get();
+
+                m_temp_exprs.emplace_back(std::move(assignment_expression));
+
+                return temp;
+            }
+
+            this->error(equals, "Invalid assignment target");
+        }
+
+        return expr;
+    }
+
 
     lang::ast::Expression* Parser::parse_equality()
     {
