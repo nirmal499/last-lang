@@ -24,11 +24,14 @@ namespace lang
             lang::ast::Statement* parse_expression_statement();
             std::vector<lang::ast::Statement*> parse_block();
 
+            lang::ast::Statement* parse_if_statement();
             
             lang::ast::Expression* parse_expression();
             lang::ast::Expression* parse_assignment();
 
             lang::ast::Expression* parse_equality();
+            lang::ast::Expression* parse_logical_or_expression();
+            lang::ast::Expression* parse_logical_and_expression();
 
             lang::ast::Expression* parse_comparison();
 

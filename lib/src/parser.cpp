@@ -60,6 +60,11 @@ namespace lang
 
     lang::ast::Statement* Parser::parse_statement()
     {
+        if(this->match({lang::TokenType::IF}))
+        {
+            return this->parse_if_statement();
+        }
+
         if(this->match({lang::TokenType::PRINT}))
         {
             return this->parse_print_statement();
@@ -76,6 +81,28 @@ namespace lang
         }
 
         return this->parse_expression_statement();
+    }
+
+    lang::ast::Statement* Parser::parse_if_statement()
+    {
+        (void)this->consume(lang::TokenType::LEFT_PAREN, "Expect '(' after 'if'.");
+        lang::ast::Expression* condition = this->parse_expression();
+        (void)this->consume(lang::TokenType::RIGHT_PAREN, "Expect ')' after 'if'.");
+
+        lang::ast::Statement* thenBranch = this->parse_statement();
+        lang::ast::Statement* elseBranch = nullptr;
+
+        if(this->match({lang::TokenType::ELSE}))
+        {
+            elseBranch = this->parse_statement();
+        }
+
+        auto if_statement = std::make_unique<lang::ast::IfStatement>(condition, thenBranch, elseBranch);
+        lang::ast::Statement* temp = if_statement.get();
+
+        m_temp_stmts.emplace_back(std::move(if_statement));
+
+        return temp;
     }
 
     std::vector<lang::ast::Statement*> Parser::parse_block()
@@ -125,7 +152,7 @@ namespace lang
 
     lang::ast::Expression* Parser::parse_assignment()
     {
-        lang::ast::Expression* expr = this->parse_equality();
+        lang::ast::Expression* expr = this->parse_logical_or_expression();
 
         if(this->match({lang::TokenType::EQUAL}))
         {
@@ -144,6 +171,44 @@ namespace lang
             }
 
             this->error(equals, "Invalid assignment target");
+        }
+
+        return expr;
+    }
+
+    lang::ast::Expression* Parser::parse_logical_or_expression()
+    {
+        lang::ast::Expression* expr = this->parse_logical_and_expression();
+        
+        while(this->match({lang::TokenType::OR}))
+        {
+            lang::Token op = this->previous();
+            lang::ast::Expression* right = this->parse_logical_and_expression();
+            
+            auto logical_expression = std::make_unique<lang::ast::LogicalExpression>(expr, op, right);
+            lang::ast::Expression* temp = logical_expression.get();
+            expr = temp;
+
+            m_temp_exprs.emplace_back(std::move(logical_expression));
+        }
+
+        return expr;
+    }
+
+    lang::ast::Expression* Parser::parse_logical_and_expression()
+    {
+        lang::ast::Expression* expr = this->parse_equality();
+        
+        while(this->match({lang::TokenType::AND}))
+        {
+            lang::Token op = this->previous();
+            lang::ast::Expression* right = this->parse_equality();
+            
+            auto logical_expression = std::make_unique<lang::ast::LogicalExpression>(expr, op, right);
+            lang::ast::Expression* temp = logical_expression.get();
+            expr = temp;
+
+            m_temp_exprs.emplace_back(std::move(logical_expression));
         }
 
         return expr;

@@ -13,6 +13,7 @@ namespace lang
         struct PrintStatement;
         struct VarStatement;
         struct BlockStatement;
+        struct IfStatement;
         
         struct BaseVisitorForStatement
         {
@@ -20,6 +21,7 @@ namespace lang
             virtual void visit(PrintStatement* statement) = 0;
             virtual void visit(VarStatement* statement) = 0;
             virtual void visit(BlockStatement* statement) = 0;
+            virtual void visit(IfStatement* statement) = 0;
         };
 
         struct Statement
@@ -35,6 +37,7 @@ namespace lang
         struct UnaryExpression;
         struct VariableExpression;
         struct AssignmentExpression;
+        struct LogicalExpression;
 
         struct BaseVisitorForExpression
         {
@@ -44,6 +47,7 @@ namespace lang
             virtual lang::util::object_t visit(UnaryExpression* expression) = 0;
             virtual lang::util::object_t visit(VariableExpression* expression) = 0;
             virtual lang::util::object_t visit(AssignmentExpression* expression) = 0;
+            virtual lang::util::object_t visit(LogicalExpression* expression) = 0;
         };
 
         struct Expression
@@ -101,6 +105,22 @@ namespace lang
 
             BlockStatement(std::vector<Statement*>&& statements)
                 : statements(std::move(statements))
+            {}
+
+            void accept(BaseVisitorForStatement* visitor) override
+            {
+                return visitor->visit(this);
+            }
+        };
+
+        struct IfStatement: public Statement
+        {
+            Expression* condition;
+            Statement* thenBranch;
+            Statement* elseBranch;
+
+            IfStatement(Expression* condition, Statement* thenBranch, Statement* elseBranch)
+                : condition(condition), thenBranch(thenBranch), elseBranch(elseBranch)
             {}
 
             void accept(BaseVisitorForStatement* visitor) override
@@ -192,6 +212,23 @@ namespace lang
 
             AssignmentExpression(const lang::Token& name, Expression* value)
                 : name(name), value(value)
+            {}
+
+            lang::util::object_t accept(BaseVisitorForExpression* visitor) override
+            {
+                return visitor->visit(this);
+            }
+        };
+
+        struct LogicalExpression: public Expression
+        {
+            Expression* left;
+            lang::Token op;
+            Expression* right;
+
+
+            LogicalExpression(Expression* left, const lang::Token& op, Expression* right)
+                : left(left), op(op), right(right)
             {}
 
             lang::util::object_t accept(BaseVisitorForExpression* visitor) override

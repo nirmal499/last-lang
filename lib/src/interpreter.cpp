@@ -155,6 +155,42 @@ namespace lang
         return expression->value;
     }
 
+    lang::util::object_t Interpreter::visit(lang::ast::LogicalExpression* expression)
+    {
+        lang::util::object_t left_value = this->evaluate(expression->left);
+
+        /****************************************************************************************************8*/
+        lang::util::object_t temp_left_truthy_value = this->is_truthy(left_value);
+        bool bool_result{false};
+        if(auto* data = std::get_if<bool>(&temp_left_truthy_value))
+        {
+            bool_result = *data;
+        }
+        else
+        {
+            /* If our lang::util::object_t contains anything except lang::util::null then it is a TRUTHY */
+            bool_result = true;
+        }
+        /****************************************************************************************************8*/
+
+        if(expression->op.m_type == lang::TokenType::OR)
+        {
+            if(bool_result)
+            {
+                return left_value;
+            }
+        }
+        else
+        {
+            if(!bool_result)
+            {
+                return left_value;
+            }
+        }
+
+        return this->evaluate(expression->right);
+    }
+
     void Interpreter::visit(lang::ast::ExpressionStatement* statement)
     {
         (void)this->evaluate(statement->expr);
@@ -168,6 +204,36 @@ namespace lang
         std::visit(lang::util::PrintVisitor{}, value); /* This is our language's print statement */
 
         return;
+    }
+
+    void Interpreter::visit(lang::ast::IfStatement* statement)
+    {
+        bool condition_result{false};
+
+        lang::util::object_t temp_evaluated_condition_result = this->evaluate(statement->condition);
+        lang::util::object_t temp_truthy_result = this->is_truthy(temp_evaluated_condition_result);
+
+        /****************************************************************************************************8*/
+        if(auto* data = std::get_if<bool>(&temp_truthy_result))
+        {
+            condition_result = *data;
+        }
+        else
+        {
+            /* If our lang::util::object_t contains anything except lang::util::null then it is a TRUTHY */
+            condition_result = true;
+        }
+        /****************************************************************************************************8*/
+
+        /* Here in if statement of c++. It needs a bool in condition block, but lang::util::object_t cannot be converted into a boolean expression */
+        if(condition_result)
+        {
+            this->execute(statement->thenBranch);
+        }
+        else if (statement->elseBranch != nullptr)
+        {
+            this->execute(statement->elseBranch);
+        }
     }
     
     void Interpreter::visit(lang::ast::VarStatement* statement)
@@ -251,7 +317,16 @@ namespace lang
         {
             case lang::TokenType::BANG:
                 {
-                    result = this->is_truthy(right);
+                    lang::util::object_t temp = this->is_truthy(right);
+                    if(auto* data = std::get_if<bool>(&temp))
+                    {
+                        result = *data;
+                    }
+                    else
+                    {
+                        result = temp;
+                    }
+                    /* result = this->is_truthy(right); */
                     break;
                 }
             case lang::TokenType::MINUS:

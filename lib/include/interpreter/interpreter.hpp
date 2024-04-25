@@ -31,6 +31,8 @@ namespace lang
 
             lang::util::object_t visit(lang::ast::AssignmentExpression* expression) override;
 
+            lang::util::object_t visit(lang::ast::LogicalExpression* expression) override;
+
             /*************************************************************************************************************/
 
             void visit(lang::ast::ExpressionStatement* statement) override;
@@ -40,6 +42,8 @@ namespace lang
             void visit(lang::ast::VarStatement* statement) override;
             
             void visit(lang::ast::BlockStatement* statement) override;
+
+            void visit(lang::ast::IfStatement* statement) override;
 
             /*************************************************************************************************************/
 

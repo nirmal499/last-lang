@@ -1,23 +1,16 @@
-var a = "global a";
-var b = "global b";
-var c = "global c";
 
+var a = 1;
+var b = 1;
+var c = 3;
+
+if(a == b and a == c)
 {
-    var a = "outer a";
-    var b = "outer b";
-
-    {
-        var a = "inner a";
-        print a;
-        print b;
-        print c;
-    }
-
-    print a;
-    print b;
-    print c;
+    print "hi" or 2;
 }
-
-print a;
-print b;
-print c;
+else
+{
+    if(a == b or a == c)
+    {
+        print nil or "yes";
+    }
+}
