@@ -258,6 +258,42 @@ namespace lang
         this->execute_block(statement->statements, temp);
     }
 
+    void Interpreter::visit(lang::ast::WhileStatement* statement)
+    {
+        lang::util::object_t temp_evaluated_condition_result = this->evaluate(statement->condition);
+        lang::util::object_t temp_truthy_value = this->is_truthy(temp_evaluated_condition_result);
+        bool bool_result{false};
+        if(auto* data = std::get_if<bool>(&temp_truthy_value))
+        {
+            bool_result = *data;
+        }
+        else
+        {
+            /* If our lang::util::object_t contains anything except lang::util::null then it is a TRUTHY */
+            bool_result = true;
+        }
+
+        while(bool_result)
+        {
+            this->execute(statement->body);
+
+            /*********************************************************************************************************************/
+            temp_evaluated_condition_result = this->evaluate(statement->condition);
+            temp_truthy_value = this->is_truthy(temp_evaluated_condition_result);
+            if(auto* data = std::get_if<bool>(&temp_truthy_value))
+            {
+                bool_result = *data;
+            }
+            else
+            {
+                /* If our lang::util::object_t contains anything except lang::util::null then it is a TRUTHY */
+                bool_result = true;
+            }
+            /*********************************************************************************************************************/
+
+        }
+    }
+
     void Interpreter::execute_block(const std::vector<lang::ast::Statement*> stmts, lang::env::Environment* env)
     {
         lang::env::Environment* temp_env = m_environment;

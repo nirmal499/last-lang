@@ -14,6 +14,7 @@ namespace lang
         struct VarStatement;
         struct BlockStatement;
         struct IfStatement;
+        struct WhileStatement;
         
         struct BaseVisitorForStatement
         {
@@ -22,6 +23,7 @@ namespace lang
             virtual void visit(VarStatement* statement) = 0;
             virtual void visit(BlockStatement* statement) = 0;
             virtual void visit(IfStatement* statement) = 0;
+            virtual void visit(WhileStatement* statement) = 0;
         };
 
         struct Statement
@@ -121,6 +123,21 @@ namespace lang
 
             IfStatement(Expression* condition, Statement* thenBranch, Statement* elseBranch)
                 : condition(condition), thenBranch(thenBranch), elseBranch(elseBranch)
+            {}
+
+            void accept(BaseVisitorForStatement* visitor) override
+            {
+                return visitor->visit(this);
+            }
+        };
+
+        struct WhileStatement: public Statement
+        {
+            Expression* condition;
+            Statement* body;
+
+            WhileStatement(Expression* condition, Statement* body)
+                : condition(condition), body(body)
             {}
 
             void accept(BaseVisitorForStatement* visitor) override

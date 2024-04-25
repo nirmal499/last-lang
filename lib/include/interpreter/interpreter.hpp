@@ -45,6 +45,8 @@ namespace lang
 
             void visit(lang::ast::IfStatement* statement) override;
 
+            void visit(lang::ast::WhileStatement* statement) override;
+
             /*************************************************************************************************************/
 
             lang::util::object_t is_truthy(const lang::util::object_t& object);

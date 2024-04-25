@@ -1,16 +1,13 @@
 
 var a = 1;
 var b = 1;
-var c = 3;
+var c = 1;
 
 if(a == b and a == c)
 {
-    print "hi" or 2;
-}
-else
-{
-    if(a == b or a == c)
+    while(a <= 5)
     {
-        print nil or "yes";
+        print a;
+        a = a + 1;
     }
 }

@@ -70,6 +70,11 @@ namespace lang
             return this->parse_print_statement();
         }
 
+        if(this->match({lang::TokenType::WHILE}))
+        {
+            return this->parse_while_statement();
+        }
+
         if(this->match({lang::TokenType::LEFT_BRACE}))
         {
             std::vector<lang::ast::Statement*> stmts = this->parse_block();
@@ -81,6 +86,21 @@ namespace lang
         }
 
         return this->parse_expression_statement();
+    }
+
+    lang::ast::Statement* Parser::parse_while_statement()
+    {
+        (void)this->consume(lang::TokenType::LEFT_PAREN, "Expect '(' after 'while'.");
+        lang::ast::Expression* condition = this->parse_expression();
+        (void)this->consume(lang::TokenType::RIGHT_PAREN, "Expect ')' after condition.");
+        lang::ast::Statement* body = this->parse_statement();
+
+        auto while_statement = std::make_unique<lang::ast::WhileStatement>(condition, body);
+        lang::ast::Statement* temp = while_statement.get();
+
+        m_temp_stmts.emplace_back(std::move(while_statement));
+
+        return temp;
     }
 
     lang::ast::Statement* Parser::parse_if_statement()
