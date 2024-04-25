@@ -2,12 +2,35 @@
 
 namespace lang
 {
+
+    lang::env::Environment* Interpreter::get_environment()
+    {
+        return m_environment;
+    }
+
+    /*****************************************native functions*******************************************/
+    lang::util::object_t native_clock_function(std::vector<lang::util::object_t>&& arguments)
+    {
+        return 89.9;
+    }
+    /*****************************************native functions*******************************************/
+
+
     std::vector<std::string> Interpreter::interpret(std::vector<lang::ast::Statement*>&& statements)
     {
         m_errors.clear();
 
         auto environment = std::make_unique<lang::env::Environment>(nullptr);
         m_environment = environment.get();
+
+        /*******************************************************************************************************************************************/
+        lang::util::LLCallable* clock_callable = new lang::util::LLCallable(this, nullptr, true, 0, &native_clock_function);
+
+        m_environment->define("clock", clock_callable);
+
+        m_temp_llcallables.push_back(clock_callable);
+
+        /*******************************************************************************************************************************************/
 
         m_temp_envs.emplace_back(std::move(environment));
 
@@ -89,6 +112,7 @@ namespace lang
                                 break;
 
                             default:
+                                /* Throw evaluation_error */
                                 this->generate_error(expression->op.m_line, "Something else is happened instead of MINUS;SLASH;STAR");
                                 result = lang::util::null;
                                 break;
@@ -258,6 +282,15 @@ namespace lang
         this->execute_block(statement->statements, temp);
     }
 
+    void Interpreter::visit(lang::ast::FunctionStatement* statement)
+    {
+        lang::util::LLCallable* user_defined_function_callable = new lang::util::LLCallable(this, statement, false, statement->params.size(), nullptr);
+        
+        m_environment->define(statement->name.m_lexeme, user_defined_function_callable);
+        
+        m_temp_llcallables.push_back(user_defined_function_callable);
+    }
+
     void Interpreter::visit(lang::ast::WhileStatement* statement)
     {
         lang::util::object_t temp_evaluated_condition_result = this->evaluate(statement->condition);
@@ -382,6 +415,36 @@ namespace lang
         }
 
         return result;
+    }
+
+    lang::util::object_t Interpreter::visit(lang::ast::CallExpression* expression)
+    {
+        lang::util::object_t callee = this->evaluate(expression->callee);
+
+        std::vector<lang::util::object_t> evaluated_arguments_value;
+        for(auto const& argument: expression->arguments)
+        {
+            evaluated_arguments_value.emplace_back(this->evaluate(argument));
+        }
+
+        lang::util::LLCallable* function = nullptr;
+        if(auto* data = std::get_if<lang::util::LLCallable*>(&callee))
+        {
+            function = *data;
+        }
+        else
+        {
+            this->generate_error(expression->closing_paren.m_line, "Can only call functions");
+        }
+
+        if(evaluated_arguments_value.size() != function->arity)
+        {
+            std::stringstream buffer;
+            buffer << "Expected " << function->arity << " arguments but got " << evaluated_arguments_value.size() << ".";
+            
+            this->generate_error(expression->closing_paren.m_line, buffer.str());
+        }
+        return function->call(std::move(evaluated_arguments_value));
     }
 
     lang::util::object_t Interpreter::is_truthy(const lang::util::object_t& object)

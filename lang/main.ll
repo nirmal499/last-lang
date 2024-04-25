@@ -1,13 +1,8 @@
-
-var a = 1;
-var b = 1;
-var c = 1;
-
-if(a == b and a == c)
+fun sayHi(first, last)
 {
-    while(a <= 5)
-    {
-        print a;
-        a = a + 1;
-    }
+    print "Hi, " + first + " " + last + "!" ;
 }
+
+sayHi("Dear", "Reader");
+
+print clock();

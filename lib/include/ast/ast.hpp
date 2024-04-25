@@ -15,6 +15,7 @@ namespace lang
         struct BlockStatement;
         struct IfStatement;
         struct WhileStatement;
+        struct FunctionStatement;
         
         struct BaseVisitorForStatement
         {
@@ -24,6 +25,7 @@ namespace lang
             virtual void visit(BlockStatement* statement) = 0;
             virtual void visit(IfStatement* statement) = 0;
             virtual void visit(WhileStatement* statement) = 0;
+            virtual void visit(FunctionStatement* statement) = 0;
         };
 
         struct Statement
@@ -40,6 +42,7 @@ namespace lang
         struct VariableExpression;
         struct AssignmentExpression;
         struct LogicalExpression;
+        struct CallExpression;
 
         struct BaseVisitorForExpression
         {
@@ -50,6 +53,7 @@ namespace lang
             virtual lang::util::object_t visit(VariableExpression* expression) = 0;
             virtual lang::util::object_t visit(AssignmentExpression* expression) = 0;
             virtual lang::util::object_t visit(LogicalExpression* expression) = 0;
+            virtual lang::util::object_t visit(CallExpression* expression) = 0;
         };
 
         struct Expression
@@ -138,6 +142,22 @@ namespace lang
 
             WhileStatement(Expression* condition, Statement* body)
                 : condition(condition), body(body)
+            {}
+
+            void accept(BaseVisitorForStatement* visitor) override
+            {
+                return visitor->visit(this);
+            }
+        };
+
+        struct FunctionStatement: public Statement
+        {
+            lang::Token name;
+            std::vector<lang::Token> params;
+            std::vector<Statement*> body_stmts;
+
+            FunctionStatement(const lang::Token& name, std::vector<lang::Token>&& params, std::vector<Statement*>&& body_stmts)
+                : name(name), params(std::move(params)), body_stmts(std::move(body_stmts))
             {}
 
             void accept(BaseVisitorForStatement* visitor) override
@@ -246,6 +266,23 @@ namespace lang
 
             LogicalExpression(Expression* left, const lang::Token& op, Expression* right)
                 : left(left), op(op), right(right)
+            {}
+
+            lang::util::object_t accept(BaseVisitorForExpression* visitor) override
+            {
+                return visitor->visit(this);
+            }
+        };
+
+        struct CallExpression: public Expression
+        {
+            Expression* callee;
+            lang::Token closing_paren;
+            std::vector<Expression*> arguments;
+
+
+            CallExpression(Expression* callee, const lang::Token& closing_paren, std::vector<Expression*>&& arguments)
+                : callee(callee), closing_paren(closing_paren), arguments(std::move(arguments))
             {}
 
             lang::util::object_t accept(BaseVisitorForExpression* visitor) override

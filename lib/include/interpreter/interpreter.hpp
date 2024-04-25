@@ -11,12 +11,26 @@ namespace lang
         public:
             Interpreter(){}
 
+            ~Interpreter()
+            {
+                for(auto const& func_pointer: m_temp_llcallables)
+                {
+                    if(func_pointer != nullptr)
+                    {
+                        delete func_pointer;
+                    }
+                }
+            }
+
             std::vector<std::string> interpret(std::vector<lang::ast::Statement*>&& statements);
+
+            void execute_block(const std::vector<lang::ast::Statement*> stmts, lang::env::Environment* env);
+
+            lang::env::Environment* get_environment();
 
         private:
             lang::util::object_t evaluate(lang::ast::Expression* expression);
             void execute(lang::ast::Statement* statement);
-            void execute_block(const std::vector<lang::ast::Statement*> stmts, lang::env::Environment* env);
 
             /*************************************************************************************************************/
             lang::util::object_t visit(lang::ast::BinaryExpression* expression) override;
@@ -32,6 +46,8 @@ namespace lang
             lang::util::object_t visit(lang::ast::AssignmentExpression* expression) override;
 
             lang::util::object_t visit(lang::ast::LogicalExpression* expression) override;
+            
+            lang::util::object_t visit(lang::ast::CallExpression* expression) override;
 
             /*************************************************************************************************************/
 
@@ -47,6 +63,8 @@ namespace lang
 
             void visit(lang::ast::WhileStatement* statement) override;
 
+            void visit(lang::ast::FunctionStatement* statement) override;
+
             /*************************************************************************************************************/
 
             lang::util::object_t is_truthy(const lang::util::object_t& object);
@@ -60,5 +78,8 @@ namespace lang
             lang::env::Environment* m_environment = nullptr;
 
             std::vector<std::unique_ptr<lang::env::Environment>> m_temp_envs;
+
+            std::vector<lang::util::LLCallable*> m_temp_llcallables;
+
     };
 }

@@ -24,10 +24,12 @@ namespace lang
             lang::ast::Statement* parse_expression_statement();
             std::vector<lang::ast::Statement*> parse_block();
             lang::ast::Statement* parse_while_statement();
+            lang::ast::Statement* parse_function_statement();
 
             lang::ast::Statement* parse_if_statement();
             
             lang::ast::Expression* parse_expression();
+            lang::ast::Expression* parse_call_expression();
             lang::ast::Expression* parse_assignment();
 
             lang::ast::Expression* parse_equality();
@@ -47,7 +49,7 @@ namespace lang
 
             lang::Token consume(lang::TokenType type, std::string message);
 
-            void error(Token token, std::string message);
+            void error(const Token& token, std::string message);
 
             void generate_error(int line, std::string message);
             
@@ -64,6 +66,8 @@ namespace lang
             Token previous();
 
             void synchronize_after_an_exception();
+
+            lang::ast::Expression* finish_call(lang::ast::Expression* callee);
 
         private:
             std::vector<lang::Token> m_tokens;

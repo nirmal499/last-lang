@@ -11,9 +11,21 @@
 #include <exception>
 #include <iomanip>
 #include <algorithm>
+#include <functional>
 
 namespace lang
 {
+    namespace ast
+    {
+        struct FunctionStatement;
+    }
+    class Interpreter;
+    
+    namespace env
+    {
+        class Environment;
+    }
+
     namespace util
     {
         enum class MYTYPE
@@ -21,20 +33,46 @@ namespace lang
             NIL
         };
 
+        struct LLCallable;
+
         /* This anonymouse namespace solves the problem of multiple definitions of null_t */
         namespace
         {
             using null_t = lang::util::MYTYPE;
             null_t null = MYTYPE::NIL;
 
-            using object_t = std::variant<double, null_t, std::string, bool>;
+            using object_t = std::variant<double, null_t, std::string, bool, lang::util::LLCallable*>;
         }
+
+        struct LLCallable
+        {
+            size_t arity{0};
+            lang::util::object_t (*call_fn)(std::vector<lang::util::object_t>&& arguments) = nullptr;
+            bool flag_is_native_function{false};
+            lang::Interpreter* interpreter = nullptr;
+            lang::ast::FunctionStatement* function_declaration_statement = nullptr;
+
+            LLCallable(
+                    lang::Interpreter* interpreter, 
+                    lang::ast::FunctionStatement* function_declaration_statement, 
+                    bool flag_is_native_function,
+                    size_t arity,
+                    lang::util::object_t (*call_fn)(std::vector<lang::util::object_t>&& arguments)
+            ) :  arity(arity), call_fn(call_fn), interpreter(interpreter), flag_is_native_function(flag_is_native_function), function_declaration_statement(function_declaration_statement)
+            {}
+
+            lang::util::object_t call(std::vector<lang::util::object_t>&& arguments);
+        };
 
         struct PrintVisitor
         {
             void operator()(double value) const { std::cout << value; }
             void operator()(const std::string& value) const { std::cout << value << "\n"; }
             void operator()(bool value) const { std::cout << std::boolalpha << value; }
+            void operator()(lang::util::LLCallable* llcallable)
+            {
+                std::cout << "<NATIVE FN>";
+            }
             void operator()(null_t value) const
             {
                 std::cout << "MYTYPE::NIL";

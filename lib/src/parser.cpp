@@ -24,6 +24,10 @@ namespace lang
     {
         try
         {
+            if(this->match({lang::TokenType::FUN}))
+            {
+                return this->parse_function_statement();
+            }
             if(this->match({lang::TokenType::VAR}))
             {
                 return this->parse_var_declaration();
@@ -36,6 +40,40 @@ namespace lang
             this->synchronize_after_an_exception();
             return nullptr;
         }
+    }
+
+    lang::ast::Statement* Parser::parse_function_statement()
+    {
+        lang::Token name = this->consume(lang::TokenType::IDENTIFIER,"Expect '(' after function name");
+        (void)this->consume(lang::TokenType::LEFT_PAREN, "Expect '(' after function name");
+        
+        std::vector<lang::Token> parameters;
+        if(!this->check(lang::TokenType::RIGHT_PAREN))
+        {
+            do
+            {
+                if(parameters.size() >= 255)
+                {
+                    this->generate_error(this->peek().m_line, "Can't have more than 255 parameters");
+                }
+
+                parameters.emplace_back(this->consume(lang::TokenType::IDENTIFIER, "Expect parameter name."));
+
+            } while(this->match({lang::TokenType::COMMA}));
+        }
+
+        this->consume(lang::TokenType::RIGHT_PAREN, "Expect ')' after parameters.");
+
+        this->consume(lang::TokenType::LEFT_BRACE, "Expect '{' before function body.");
+        std::vector<lang::ast::Statement*> body = this->parse_block();
+
+        auto function_statement = std::make_unique<lang::ast::FunctionStatement>(name, std::move(parameters), std::move(body));
+        lang::ast::FunctionStatement* temp = function_statement.get();
+
+        m_temp_stmts.emplace_back(std::move(function_statement));
+
+        return temp;
+
     }
 
     lang::ast::Statement* Parser::parse_var_declaration()
@@ -322,7 +360,62 @@ namespace lang
             return expr;
         }
 
-        return this->parse_primary();
+        return this->parse_call_expression();
+    }
+
+    lang::ast::Expression* Parser::parse_call_expression()
+    {
+        lang::ast::Expression* expr = this->parse_primary();
+
+        /*
+        while(true)
+        {
+            if(this->match({lang::TokenType::LEFT_PAREN}))
+            {
+                lang::ast::Expression* expr = this->finish_call(expr);
+            }
+            else
+            {
+                break;
+            }
+        }
+        */
+
+        while(this->match({lang::TokenType::LEFT_PAREN}))
+        {
+            /* BIGGEST MISTAKE OF YOUR LIFE: "<! lang::ast::Expression* expr !> = this->finish_call(expr);" */
+            expr = this->finish_call(expr);
+        }
+
+        return expr;
+    }
+
+    lang::ast::Expression* Parser::finish_call(lang::ast::Expression* callee)
+    {
+        std::vector<lang::ast::Expression*> arguments;
+        if(!this->check({lang::TokenType::RIGHT_PAREN}))
+        {
+            /* We have arguments */
+            do
+            {
+                if(arguments.size() >= 255)
+                {
+                    this->generate_error(this->peek().m_line, "Can't have more than 255 arguments");
+                }
+                arguments.emplace_back(this->parse_expression());
+
+            } while(this->match({lang::TokenType::COMMA}));
+        }
+
+        /* We do not have any arguments */
+        lang::Token paren = this->consume(lang::TokenType::RIGHT_PAREN, "Expect ')' after arguments");
+
+        auto call_expression = std::make_unique<lang::ast::CallExpression>(callee, paren, std::move(arguments));
+        lang::ast::Expression* temp = call_expression.get();
+
+        m_temp_exprs.emplace_back(std::move(call_expression));
+        
+        return temp;
     }
 
     lang::ast::Expression* Parser::parse_primary()
@@ -413,7 +506,7 @@ namespace lang
         return lang::Token{lang::TokenType::MYEOF, "DEAD END", lang::util::null, 1}; // Unreachable
     }
     
-    void Parser::error(Token token, std::string message)
+    void Parser::error(const Token& token, std::string message)
     {
         if(token.m_type == lang::TokenType::MYEOF)
         {
