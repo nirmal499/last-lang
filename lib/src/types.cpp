@@ -21,7 +21,14 @@ namespace lang
                 environment->define(function_declaration_statement->params.at(i).m_lexeme, arguments.at(i));
             }
 
-            interpreter->execute_block(function_declaration_statement->body_stmts, environment.get());
+            try{
+
+                interpreter->execute_block(function_declaration_statement->body_stmts, environment.get());
+                
+            } catch(const lang::util::return_statement_throw& e)
+            {
+                return e.get_val();
+            }
 
             return lang::util::null;
         }

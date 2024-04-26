@@ -108,6 +108,11 @@ namespace lang
             return this->parse_print_statement();
         }
 
+        if(this->match({lang::TokenType::RETURN}))
+        {
+            return this->parse_return_statement();
+        }
+
         if(this->match({lang::TokenType::WHILE}))
         {
             return this->parse_while_statement();
@@ -124,6 +129,26 @@ namespace lang
         }
 
         return this->parse_expression_statement();
+    }
+
+    lang::ast::Statement* Parser::parse_return_statement()
+    {
+        Token keyword = this->previous();
+        lang::ast::Expression* value = nullptr;
+
+        if(!this->check({lang::TokenType::SEMICOLON}))
+        {
+            value = this->parse_expression();
+        }
+
+        (void)this->consume(lang::TokenType::SEMICOLON, "Expect ';' after return value");
+
+        auto return_statement = std::make_unique<lang::ast::ReturnStatement>(keyword, value);
+        lang::ast::Statement* temp = return_statement.get();
+
+        m_temp_stmts.emplace_back(std::move(return_statement));
+
+        return temp;
     }
 
     lang::ast::Statement* Parser::parse_while_statement()

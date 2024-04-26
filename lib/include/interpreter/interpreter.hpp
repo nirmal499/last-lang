@@ -65,6 +65,9 @@ namespace lang
 
             void visit(lang::ast::FunctionStatement* statement) override;
 
+            void visit(lang::ast::ReturnStatement* statement) override;
+
+
             /*************************************************************************************************************/
 
             lang::util::object_t is_truthy(const lang::util::object_t& object);

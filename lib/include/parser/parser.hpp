@@ -27,6 +27,7 @@ namespace lang
             lang::ast::Statement* parse_function_statement();
 
             lang::ast::Statement* parse_if_statement();
+            lang::ast::Statement* parse_return_statement();
             
             lang::ast::Expression* parse_expression();
             lang::ast::Expression* parse_call_expression();

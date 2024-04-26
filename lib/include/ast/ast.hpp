@@ -16,6 +16,7 @@ namespace lang
         struct IfStatement;
         struct WhileStatement;
         struct FunctionStatement;
+        struct ReturnStatement;
         
         struct BaseVisitorForStatement
         {
@@ -26,6 +27,7 @@ namespace lang
             virtual void visit(IfStatement* statement) = 0;
             virtual void visit(WhileStatement* statement) = 0;
             virtual void visit(FunctionStatement* statement) = 0;
+            virtual void visit(ReturnStatement* statement) = 0;
         };
 
         struct Statement
@@ -158,6 +160,21 @@ namespace lang
 
             FunctionStatement(const lang::Token& name, std::vector<lang::Token>&& params, std::vector<Statement*>&& body_stmts)
                 : name(name), params(std::move(params)), body_stmts(std::move(body_stmts))
+            {}
+
+            void accept(BaseVisitorForStatement* visitor) override
+            {
+                return visitor->visit(this);
+            }
+        };
+
+        struct ReturnStatement: public Statement
+        {
+            lang::Token keyword;
+            Expression* value;
+
+            ReturnStatement(const lang::Token& keyword, Expression* value)
+                : keyword(keyword), value(value)
             {}
 
             void accept(BaseVisitorForStatement* visitor) override

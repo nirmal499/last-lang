@@ -327,6 +327,17 @@ namespace lang
         }
     }
 
+    void Interpreter::visit(lang::ast::ReturnStatement* statement)
+    {
+        lang::util::object_t evaluated_value = lang::util::null;
+        if(statement->value != nullptr)
+        {
+            evaluated_value = this->evaluate(statement->value);
+        }
+
+        throw lang::util::return_statement_throw(evaluated_value);
+    }
+
     void Interpreter::execute_block(const std::vector<lang::ast::Statement*> stmts, lang::env::Environment* env)
     {
         lang::env::Environment* temp_env = m_environment;
@@ -338,8 +349,14 @@ namespace lang
                 this->execute(stmt);
             }
         }
+        catch(const lang::util::return_statement_throw& e)
+        {
+            throw;
+        }
         catch(...)
-        {}
+        {
+            
+        }
 
         /* finally */
         m_environment = temp_env; /* Restore back our environment */

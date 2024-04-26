@@ -66,16 +66,16 @@ namespace lang
 
         struct PrintVisitor
         {
-            void operator()(double value) const { std::cout << value; }
+            void operator()(double value) const { std::cout << value << "\n"; }
             void operator()(const std::string& value) const { std::cout << value << "\n"; }
-            void operator()(bool value) const { std::cout << std::boolalpha << value; }
+            void operator()(bool value) const { std::cout << std::boolalpha << value << "\n"; }
             void operator()(lang::util::LLCallable* llcallable)
             {
-                std::cout << "<NATIVE FN>";
+                std::cout << "<NATIVE FN>\n";
             }
             void operator()(null_t value) const
             {
-                std::cout << "MYTYPE::NIL";
+                std::cout << "MYTYPE::NIL\n";
             }
         };
 
@@ -109,6 +109,30 @@ namespace lang
             
             private:
                 std::string msg;
+        };
+
+        class return_statement_throw: public std::exception
+        {
+            public:
+                return_statement_throw(const lang::util::object_t& value)
+                    : value(value)
+                {}
+
+                ~return_statement_throw()
+                {}
+
+                /* Override what() method to provide error message */
+                virtual const char* what() const throw() {
+                    return "IT IS JUST FOR RETURN STATEMENT";
+                }
+
+                lang::util::object_t get_val() const
+                {
+                    return value;
+                }
+
+            private:
+                lang::util::object_t value;
         };
 
     }
