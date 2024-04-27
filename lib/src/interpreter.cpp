@@ -24,7 +24,7 @@ namespace lang
         m_environment = environment.get();
 
         /*******************************************************************************************************************************************/
-        lang::util::LLCallable* clock_callable = new lang::util::LLCallable(this, nullptr, true, 0, &native_clock_function);
+        lang::util::LLCallable* clock_callable = new lang::util::LLCallable(this, nullptr, true, 0, &native_clock_function, nullptr);
 
         m_environment->define("clock", clock_callable);
 
@@ -284,7 +284,7 @@ namespace lang
 
     void Interpreter::visit(lang::ast::FunctionStatement* statement)
     {
-        lang::util::LLCallable* user_defined_function_callable = new lang::util::LLCallable(this, statement, false, statement->params.size(), nullptr);
+        lang::util::LLCallable* user_defined_function_callable = new lang::util::LLCallable(this, statement, false, statement->params.size(), nullptr, m_environment);
         
         m_environment->define(statement->name.m_lexeme, user_defined_function_callable);
         

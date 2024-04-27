@@ -1,31 +1,17 @@
-
-fun fib(n)
+fun makeCounter()
 {
-    var previous_previous_number = 0;
-    var previous_number = 0;
-    var current_number = 1;
+    var i = 0;
 
-    print previous_number;
-    print current_number;
-
-    var c = 2;
-    while(c <= n)
+    fun count()
     {
-        previous_previous_number = previous_number;
-        previous_number = current_number;
-        current_number = previous_previous_number + previous_number;
-
-        print current_number;
-
-        c = c + 1;
+        i = i + 1;
+        print i;
     }
 
-    return current_number;
+    return count;
 }
 
-var c = 5;
-var b = "WE GOT";
+var counter = makeCounter();
 
-print b;
-
-print fib(c);
+counter();
+counter();

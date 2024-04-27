@@ -14,7 +14,12 @@ namespace lang
                 return this->call_fn(std::move(arguments));
             }
 
-            std::unique_ptr<lang::env::Environment> environment = std::make_unique<lang::env::Environment>(interpreter->get_environment());
+            /*
+                std::unique_ptr<lang::env::Environment> environment = std::make_unique<lang::env::Environment>(interpreter->get_environment());
+
+                In this it was always the global_environment which is the parent here
+            */
+            std::unique_ptr<lang::env::Environment> environment = std::make_unique<lang::env::Environment>(closure);
 
             for(int i = 0; i < function_declaration_statement->params.size(); i++)
             {
