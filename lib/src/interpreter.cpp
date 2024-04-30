@@ -351,6 +351,9 @@ namespace lang
         }
         catch(const lang::util::return_statement_throw& e)
         {
+            /* finally */
+            m_environment = temp_env; /* Restore back our environment */
+            
             throw;
         }
         catch(...)
