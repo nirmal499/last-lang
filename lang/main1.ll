@@ -15,3 +15,5 @@ var counter = makeCounter();
 
 counter();
 counter();
+counter();
+counter();

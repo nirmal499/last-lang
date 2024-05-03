@@ -24,7 +24,7 @@ namespace lang
 
             std::vector<std::string> interpret(std::vector<lang::ast::Statement*>&& statements);
 
-            void execute_block(const std::vector<lang::ast::Statement*> stmts, lang::env::Environment* env);
+            void execute_block(const std::vector<lang::ast::Statement*>& stmts, lang::env::Environment* env);
 
             lang::env::Environment* get_environment();
 

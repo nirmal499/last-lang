@@ -11,9 +11,9 @@ namespace lang
         {
             public:
 
-                Environment(Environment* enclosing)
-                    : m_enclosing(enclosing)
-                {}
+                Environment(Environment* enclosing);
+
+                ~Environment();
 
                 lang::util::object_t get(const lang::Token& name);
                 

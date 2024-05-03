@@ -53,6 +53,8 @@ namespace lang
             lang::ast::FunctionStatement* function_declaration_statement = nullptr;
             lang::env::Environment* closure = nullptr;
 
+            lang::env::Environment* new_environment = nullptr;
+
             LLCallable(
                 
                     lang::Interpreter* interpreter, 
@@ -62,13 +64,9 @@ namespace lang
                     lang::util::object_t (*call_fn)(std::vector<lang::util::object_t>&& arguments),
                     lang::env::Environment* closure
 
-            ) :     arity(arity), 
-                    call_fn(call_fn), 
-                    interpreter(interpreter), 
-                    flag_is_native_function(flag_is_native_function), 
-                    function_declaration_statement(function_declaration_statement),
-                    closure(closure)
-            {}
+            );
+
+            ~LLCallable();
 
             lang::util::object_t call(std::vector<lang::util::object_t>&& arguments);
         };

@@ -4,6 +4,9 @@ namespace lang
 {
     namespace env
     {
+        Environment::Environment(Environment* enclosing): m_enclosing(enclosing) {}
+
+        Environment::~Environment(){}
         lang::util::object_t Environment::get(const lang::Token& name)
         {   
             auto it = m_values.find(name.m_lexeme);
@@ -12,7 +15,7 @@ namespace lang
                 return it->second;
             }
 
-            if(m_enclosing != nullptr)
+            if(m_enclosing != nullptr && m_enclosing != this)
             {
                 return m_enclosing->get(name);
             }

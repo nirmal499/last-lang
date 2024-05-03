@@ -171,7 +171,7 @@ namespace lang
 
     lang::util::object_t Interpreter::visit(lang::ast::GroupingExpression* expression)
     {
-        return this->evaluate(expression);
+        return this->evaluate(expression->expr);
     }
 
     lang::util::object_t Interpreter::visit(lang::ast::LiteralExpression* expression)
@@ -338,7 +338,7 @@ namespace lang
         throw lang::util::return_statement_throw(evaluated_value);
     }
 
-    void Interpreter::execute_block(const std::vector<lang::ast::Statement*> stmts, lang::env::Environment* env)
+    void Interpreter::execute_block(const std::vector<lang::ast::Statement*>& stmts, lang::env::Environment* env)
     {
         lang::env::Environment* temp_env = m_environment;
         try

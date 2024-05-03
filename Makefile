@@ -1,22 +1,14 @@
-project-configure-fresh-with-unit-test:
+
+project-configure-fresh:
 	rm -fr build
 	mkdir build
-	cmake -B build -S . -DENABLE_TESTING=ON
+	cmake -B build -S .
 
 project-configure:
-    cmake -B build -S . -DENABLE_TESTING=ON
+	cmake -B build -S .
 
 project-build:
-    cmake --build build
-
-project-build-target-exe:
-    cmake --build build --target executable
-
-project-build-target-unit-test:
-    cmake --build build --target unit_tests
+	cmake --build build
 
 project-run-exe:
-    ./build/lang/executable
-
-project-run-test:
-    ./build/tests/unit_tests
+	./build/lang/executable lang/main.ll
